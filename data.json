@@ -1,7 +1,7 @@
 {
   "updated": "2026-07-17T21:00:00+02:00",
   "phase": "pre",
-  "note": "Toernooi nog niet begonnen — projectie op basis van ratings.",
+  "note": "testrun",
   "ratings": {
     "GER": 90, "AUS": 90, "ARG": 84, "NZL": 83, "ENG": 80, "RSA": 77,
     "NED": 74, "ESP": 64, "MAS": 62, "IRL": 60, "SCO": 58, "BEL": 57,

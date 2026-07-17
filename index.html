@@ -87,7 +87,9 @@
   .mrow{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding:7px 10px;border-radius:8px;background:var(--panel);margin-bottom:6px;border:1px solid transparent}
   .mrow.nedm{border-color:rgba(245,129,30,.4);background:rgba(245,129,30,.06)}
   .mrow .thome{text-align:right;font-weight:500} .mrow .taway{text-align:left;font-weight:500}
-  .mrow .sc{display:flex;align-items:center;gap:6px;justify-content:center}
+  .mrow .sc{display:flex;flex-direction:column;align-items:center;gap:3px;justify-content:center}
+  .mrow .scin{display:flex;align-items:center;gap:6px}
+  .mmeta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.03em;color:var(--faint)}
   .tcol{color:var(--muted)} .tcol.NED{color:var(--ned)} .tcol.AUS{color:var(--aus)} .tcol.ENG{color:var(--eng)}
 
   .brk{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
@@ -156,7 +158,7 @@
   </div>
 
   <div class="view" id="view-uitslagen">
-    <div class="banner">Deze uitslagen worden automatisch bijgewerkt. Je mag ze aanpassen om scenario's te verkennen — dan pauzeert de live-update tot je op <b>Terug naar live</b> klikt.</div>
+    <div class="banner">Deze uitslagen worden automatisch bijgewerkt. Je mag ze aanpassen om scenario's te verkennen — dan pauzeert de live-update tot je op <b>Terug naar live</b> klikt. Locaties: <b>ROT</b> = HC Rotterdam (Hazelaarweg) · <b>VIC</b> = Hockey Club Victoria (Kralingseweg).</div>
     <div id="matchList"></div>
   </div>
 
@@ -216,7 +218,7 @@ const POLL_MS=5*60*1000;           // elke 5 min verversen
 /* ---------- BASISDATA ---------- */
 const TEAMS=[
   {code:'AUS',name:'Australië',rating:90},{code:'NED',name:'Nederland',rating:89},
-  {code:'GER',name:'Duitsland',rating:87},{code:'ENG',name:'Engeland',rating:85},
+  {code:'ENG',name:'Engeland',rating:87},{code:'GER',name:'Duitsland',rating:85},
   {code:'ARG',name:'Argentinië',rating:83},{code:'NZL',name:'Nieuw-Zeeland',rating:82},
   {code:'RSA',name:'Zuid-Afrika',rating:78},{code:'IRL',name:'Ierland',rating:61},
   {code:'MAS',name:'Maleisië',rating:60},{code:'ESP',name:'Spanje',rating:58},
@@ -228,14 +230,15 @@ const TEAMS=[
   {code:'SRI',name:'Sri Lanka',rating:40},{code:'BAN',name:'Bangladesh',rating:38},
 ];
 const RATING={},NAME={}; TEAMS.forEach(t=>{RATING[t.code]=t.rating;NAME[t.code]=t.name;});
-const DAYS={1:'Donderdag 23 jul',2:'Vrijdag 24 jul',3:'Zaterdag 25 jul',4:'Zondag 26 jul',5:'Maandag 27 jul'};
+const DAYS={1:'Donderdag 23 jul',2:'Vrijdag 24 jul',3:'Zaterdag 25 jul',4:'Zondag 26 jul',5:'Maandag 27 jul',6:'Dinsdag 28 jul'};
 let MATCHES=[
-  {d:1,h:'ARG',a:'JPN'},{d:1,h:'CHI',a:'SRI'},{d:1,h:'NED',a:'NZL'},{d:1,h:'SCO',a:'ENG'},
-  {d:1,h:'RSA',a:'BAN'},{d:1,h:'GER',a:'WAL'},{d:1,h:'MAS',a:'KEN'},{d:1,h:'HKG',a:'AUS'},{d:1,h:'FRA',a:'ESP'},
-  {d:2,h:'IRL',a:'SGP'},{d:2,h:'ENG',a:'RSA'},{d:2,h:'NZL',a:'MAS'},{d:2,h:'WAL',a:'USA'},{d:2,h:'KEN',a:'FRA'},{d:2,h:'BEL',a:'HKG'},
-  {d:3,h:'SGP',a:'GER'},{d:3,h:'SRI',a:'SCO'},{d:3,h:'ESP',a:'ARG'},{d:3,h:'BAN',a:'IRL'},{d:3,h:'USA',a:'NED'},{d:3,h:'JPN',a:'BEL'},{d:3,h:'AUS',a:'CHI'},
-  {d:4,h:'GER',a:'IRL'},{d:4,h:'BAN',a:'ENG'},{d:4,h:'ARG',a:'FRA'},{d:4,h:'KEN',a:'NZL'},{d:4,h:'RSA',a:'SCO'},{d:4,h:'SRI',a:'AUS'},{d:4,h:'MAS',a:'NED'},
-  {d:5,h:'NZL',a:'USA'},{d:5,h:'BEL',a:'ARG'},{d:5,h:'IRL',a:'RSA'},{d:5,h:'ENG',a:'SRI'},{d:5,h:'FRA',a:'MAS'},{d:5,h:'ESP',a:'KEN'},{d:5,h:'SCO',a:'CHI'},{d:5,h:'SGP',a:'BAN'},{d:5,h:'NED',a:'WAL'},{d:5,h:'HKG',a:'JPN'},{d:5,h:'AUS',a:'BEL'},{d:5,h:'CHI',a:'HKG'},{d:5,h:'USA',a:'GER'},{d:5,h:'JPN',a:'ESP'},{d:5,h:'WAL',a:'SGP'},
+  {d:1,t:'09:00',p:'ROT 2',h:'ARG',a:'JPN'},{d:1,t:'09:15',p:'ROT 3',h:'CHI',a:'SRI'},{d:1,t:'10:50',p:'ROT 2',h:'NED',a:'NZL'},{d:1,t:'12:40',p:'ROT 2',h:'SCO',a:'ENG'},
+  {d:1,t:'14:30',p:'ROT 2',h:'RSA',a:'BAN'},{d:1,t:'16:20',p:'ROT 1',h:'GER',a:'WAL'},{d:1,t:'16:20',p:'ROT 2',h:'MAS',a:'KEN'},{d:1,t:'18:10',p:'ROT 1',h:'HKG',a:'AUS'},{d:1,t:'18:10',p:'ROT 2',h:'FRA',a:'ESP'},
+  {d:2,t:'09:15',p:'ROT 3',h:'IRL',a:'SGP'},{d:2,t:'11:05',p:'ROT 3',h:'ENG',a:'RSA'},{d:2,t:'12:55',p:'ROT 3',h:'NZL',a:'MAS'},{d:2,t:'14:45',p:'ROT 3',h:'WAL',a:'USA'},{d:2,t:'16:35',p:'ROT 3',h:'KEN',a:'FRA'},{d:2,t:'16:20',p:'ROT 2',h:'BEL',a:'HKG'},
+  {d:3,t:'09:00',p:'VIC A',h:'SGP',a:'GER'},{d:3,t:'10:50',p:'VIC A',h:'SRI',a:'SCO'},{d:3,t:'12:40',p:'VIC A',h:'ESP',a:'ARG'},{d:3,t:'14:30',p:'VIC A',h:'BAN',a:'IRL'},{d:3,t:'16:20',p:'VIC A',h:'USA',a:'NED'},{d:3,t:'18:10',p:'VIC A',h:'JPN',a:'BEL'},{d:3,t:'18:10',p:'VIC B',h:'AUS',a:'CHI'},
+  {d:4,t:'09:00',p:'ROT 2',h:'GER',a:'IRL'},{d:4,t:'10:50',p:'ROT 2',h:'BAN',a:'ENG'},{d:4,t:'09:15',p:'ROT 3',h:'ARG',a:'FRA'},{d:4,t:'11:05',p:'ROT 3',h:'KEN',a:'NZL'},{d:4,t:'12:55',p:'ROT 3',h:'RSA',a:'SCO'},{d:4,t:'14:45',p:'ROT 3',h:'SRI',a:'AUS'},{d:4,t:'16:35',p:'ROT 3',h:'MAS',a:'NED'},
+  {d:5,t:'09:00',p:'VIC B',h:'NZL',a:'USA'},{d:5,t:'10:50',p:'VIC B',h:'BEL',a:'ARG'},{d:5,t:'12:40',p:'VIC B',h:'IRL',a:'RSA'},{d:5,t:'14:30',p:'VIC B',h:'ENG',a:'SRI'},{d:5,t:'16:20',p:'VIC B',h:'FRA',a:'MAS'},{d:5,t:'09:15',p:'VIC C',h:'ESP',a:'KEN'},{d:5,t:'11:05',p:'VIC C',h:'SCO',a:'CHI'},{d:5,t:'12:55',p:'VIC C',h:'SGP',a:'BAN'},{d:5,t:'14:45',p:'VIC C',h:'NED',a:'WAL'},{d:5,t:'16:35',p:'VIC C',h:'HKG',a:'JPN'},
+  {d:6,t:'16:20',p:'VIC B',h:'AUS',a:'BEL'},{d:6,t:'18:10',p:'VIC B',h:'JPN',a:'ESP'},{d:6,t:'18:10',p:'VIC A',h:'USA',a:'GER'},{d:6,t:'16:35',p:'VIC C',h:'CHI',a:'HKG'},{d:6,t:'18:25',p:'VIC C',h:'WAL',a:'SGP'},
 ];
 MATCHES.forEach((m,i)=>{m.id=i;m.hs=null;m.as=null;});
 
@@ -315,10 +318,10 @@ function renderStand(){
 }
 function renderMatches(){
   let html='';
-  for(let d=1;d<=5;d++){ const ms=MATCHES.filter(m=>m.d===d); html+=`<div class="day"><h3>${DAYS[d]}</h3>`;
+  for(let d=1;d<=6;d++){ const ms=MATCHES.filter(m=>m.d===d); html+=`<div class="day"><h3>${DAYS[d]}</h3>`;
     ms.forEach(m=>{const isNed=(m.h==='NED'||m.a==='NED');
       html+=`<div class="mrow ${isNed?'nedm':''}"><div class="thome"><span class="tcol ${m.h}">${NAME[m.h]}</span></div>
-        <div class="sc"><input class="score" type="number" min="0" max="30" data-id="${m.id}" data-side="h" value="${m.hs??''}"><span style="color:var(--faint)">–</span><input class="score" type="number" min="0" max="30" data-id="${m.id}" data-side="a" value="${m.as??''}"></div>
+        <div class="sc"><div class="mmeta">${m.t} · ${m.p}</div><div class="scin"><input class="score" type="number" min="0" max="30" data-id="${m.id}" data-side="h" value="${m.hs??''}"><span style="color:var(--faint)">–</span><input class="score" type="number" min="0" max="30" data-id="${m.id}" data-side="a" value="${m.as??''}"></div></div>
         <div class="taway"><span class="tcol ${m.a}">${NAME[m.a]}</span></div></div>`;});
     html+='</div>';}
   document.getElementById('matchList').innerHTML=html;

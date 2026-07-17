@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nederland Heren 50 — WK dashboard (live)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1317; --panel:#191F25; --panel2:#212932; --line:#2C363F; --line2:#3A4650;
+    --ink:#EAEDF0; --muted:#95A0AA; --faint:#5E6B76;
+    --ned:#F5811E; --aus:#16A67B; --eng:#E0504E;
+    --k:#E0504E; --kbg:#3A2020; --h:#E0A32E; --hbg:#3A3016; --f:#39A987; --fbg:#163028;
+    --good:#39A987; --goodbg:#163028; --r:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;line-height:1.55;
+    padding:24px 16px 72px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;line-height:1;
+    text-transform:uppercase;letter-spacing:.01em}
+  h1 .a{color:var(--ned)}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  .livebar{display:flex;align-items:center;gap:10px;margin:14px 0 2px;font-size:12.5px;color:var(--muted)}
+  .ldot{width:8px;height:8px;border-radius:50%;background:var(--good);display:inline-block}
+  @media(prefers-reduced-motion: no-preference){.ldot.on{animation:pulse 2s ease-in-out infinite}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .ldot.off{background:var(--h)}
+  .livebar .btn{margin-left:auto;font-size:12px;color:var(--ned);background:rgba(245,129,30,.12);
+    border:1px solid rgba(245,129,30,.4);border-radius:6px;padding:5px 10px;cursor:pointer;display:none}
+  .livebar.scenario .btn{display:inline-block}
+
+  .status{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 6px}
+  @media(max-width:640px){.status{grid-template-columns:1fr}}
+  .scard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+  .scard .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  .scard .big{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;line-height:1.05;margin-top:2px}
+  .scard.ned{border-color:rgba(245,129,30,.45)} .scard.ned .big{color:var(--ned)}
+  .scard .meet{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .rb{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;padding:1px 6px;border-radius:4px;vertical-align:middle}
+  .rb.k{color:var(--k);background:var(--kbg)} .rb.h{color:var(--h);background:var(--hbg)} .rb.f{color:var(--f);background:var(--fbg)} .rb.n{color:var(--faint);background:#232B32}
+
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 16px;border-bottom:1px solid var(--line)}
+  .tab{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:17px;text-transform:uppercase;
+    letter-spacing:.03em;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:9px 14px;cursor:pointer}
+  .tab:hover{color:var(--ink)} .tab.active{color:var(--ned);border-bottom-color:var(--ned)}
+  .view{display:none} .view.active{display:block}
+
+  .banner{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--ned);
+    border-radius:8px;padding:11px 14px;font-size:13.5px;color:var(--muted);margin-bottom:16px}
+  .banner b{color:var(--ink);font-weight:600}
+  .hint{font-size:12.5px;color:var(--faint)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:right;padding:9px 8px;border-bottom:1px solid var(--line)}
+  th.l{text-align:left}
+  td{padding:8px;border-bottom:1px solid var(--line);text-align:right} td.l{text-align:left}
+  tr.ned td{background:rgba(245,129,30,.09)} tr.ned td.tm{color:var(--ned);font-weight:600}
+  tr.aus td.tm{color:var(--aus);font-weight:600} tr.eng td.tm{color:var(--eng);font-weight:600}
+  .flag{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:7px;vertical-align:middle}
+  .pos{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--muted);width:34px}
+  tr.q8 .pos{color:var(--good)}
+  .cutline td{border-bottom:2px solid var(--good);padding:0;height:0}
+  .cuttxt{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--good);text-transform:uppercase;padding:4px 8px}
+  .tier{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:20px;background:#232B32;color:var(--muted)}
+  input.rating,input.score{font-family:'JetBrains Mono',monospace;background:#0E1317;border:1px solid var(--line2);color:var(--ink);border-radius:6px;padding:5px;text-align:center;font-size:14px}
+  input.rating{width:56px} input.score{width:42px}
+  input.score:focus,input.rating:focus{outline:none;border-color:var(--ned)}
+
+  .projcard{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+  @media(max-width:560px){.projcard{grid-template-columns:1fr}}
+  .projcard .exp{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:44px;color:var(--ned);line-height:1}
+  .projcard .exp small{font-size:18px;color:var(--faint)}
+  .projcard .plbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  .probs{display:flex;gap:22px;flex-wrap:wrap}
+  .prob .pv{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:24px}
+  .prob .pn{font-size:12px;color:var(--muted)}
+
+  .day{margin-bottom:20px}
+  .day h3{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:19px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+  .mrow{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding:7px 10px;border-radius:8px;background:var(--panel);margin-bottom:6px;border:1px solid transparent}
+  .mrow.nedm{border-color:rgba(245,129,30,.4);background:rgba(245,129,30,.06)}
+  .mrow .thome{text-align:right;font-weight:500} .mrow .taway{text-align:left;font-weight:500}
+  .mrow .sc{display:flex;align-items:center;gap:6px;justify-content:center}
+  .tcol{color:var(--muted)} .tcol.NED{color:var(--ned)} .tcol.AUS{color:var(--aus)} .tcol.ENG{color:var(--eng)}
+
+  .brk{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+  @media(max-width:640px){.brk{grid-template-columns:1fr}}
+  .bhalf{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .bhalf h4{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+  .qf{border-left:2px solid var(--line2);padding-left:11px;margin-bottom:13px}
+  .qf .ql{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);margin-bottom:5px}
+  .slot{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:6px;background:#0E1317;margin-bottom:4px}
+  .slot .sd{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:var(--faint);width:22px}
+  .slot .st{font-weight:500;font-size:13.5px}
+  .slot.NED{background:rgba(245,129,30,.12)} .slot.NED .st{color:var(--ned)} .slot.NED .sd{color:var(--ned)}
+  .slot.AUS{background:rgba(22,166,123,.12)} .slot.AUS .st{color:var(--aus)} .slot.AUS .sd{color:var(--aus)}
+  .slot.ENG{background:rgba(224,80,78,.12)} .slot.ENG .st{color:var(--eng)} .slot.ENG .sd{color:var(--eng)}
+
+  .ftgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.ftgrid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h4{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:20px;text-transform:uppercase;letter-spacing:.02em;margin-bottom:4px}
+  .card .cs{font-size:13px;color:var(--muted);margin-bottom:14px}
+  select{font-family:'Inter',sans-serif;font-size:13.5px;background:#0E1317;color:var(--ink);border:1px solid var(--line2);border-radius:7px;padding:7px 9px}
+  .ftrow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  .ftrow:last-child{border-bottom:none}
+  .ftrow .goal{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:18px}
+  .res-need{color:var(--ned)} .res-safe{color:var(--good)} .res-no{color:var(--eng)}
+  .ftrow .ex{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+
+  .mm{display:grid;grid-template-columns:52px repeat(8,1fr);gap:3px;max-width:560px;margin-top:6px}
+  .mm div{text-align:center;padding:7px 4px;border-radius:5px;font-size:13px}
+  .mm .hd{background:var(--panel2);color:var(--ink);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px}
+  .mm .cell{font-family:'JetBrains Mono',monospace;font-weight:700}
+  .mm .cK{color:var(--k);background:var(--kbg)} .mm .cH{color:var(--h);background:var(--hbg)}
+  .mm .cF{color:var(--f);background:var(--fbg)} .mm .cX{color:var(--faint);background:#1A2027}
+  .mm .cell.live{outline:2px solid var(--ned);outline-offset:-2px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:11px;height:11px;border-radius:3px}
+  footer{margin-top:34px;text-align:center;color:var(--faint);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">WMH World Cup Rotterdam 2026 · 50 Men · Pool A · 22 teams</div>
+  <h1><span class="a">Nederland</span> Heren 50 — live dashboard</h1>
+
+  <div class="livebar" id="livebar">
+    <span class="ldot on" id="ldot"></span>
+    <span id="livetxt">Live — data laden…</span>
+    <button class="btn" id="backLive">Terug naar live</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-v="stand">Stand</button>
+    <button class="tab" data-v="uitslagen">Uitslagen</button>
+    <button class="tab" data-v="bracket">Bracket</button>
+    <button class="tab" data-v="finetune">Finetune</button>
+    <button class="tab" data-v="sterkte">Sterkte</button>
+  </div>
+
+  <div class="view active" id="view-stand">
+    <div class="projcard" id="projCard"></div>
+    <div class="banner">Live poulestand uit de ingevoerde uitslagen. Rangschikking: punten → doelsaldo → doelpunten voor → onderling. De groene lijn is de top-8-grens.</div>
+    <table id="standTable"></table>
+  </div>
+
+  <div class="view" id="view-uitslagen">
+    <div class="banner">Deze uitslagen worden automatisch bijgewerkt. Je mag ze aanpassen om scenario's te verkennen — dan pauzeert de live-update tot je op <b>Terug naar live</b> klikt.</div>
+    <div id="matchList"></div>
+  </div>
+
+  <div class="view" id="view-bracket">
+    <div class="banner" id="brkNote"></div>
+    <div class="brk" id="bracket"></div>
+    <div class="legend" style="margin-top:18px">
+      <span><span class="dot" style="background:var(--ned)"></span>Nederland</span>
+      <span><span class="dot" style="background:var(--aus)"></span>Australië</span>
+      <span><span class="dot" style="background:var(--eng)"></span>Engeland</span>
+    </div>
+  </div>
+
+  <div class="view" id="view-finetune">
+    <div class="banner">Kies een nog te spelen Nederland-wedstrijd; het dashboard rekent uit welk resultaat nodig is voor elke doelpositie, gegeven de andere ingevoerde uitslagen.</div>
+    <div class="ftgrid">
+      <div class="card">
+        <h4>Welk resultaat is nodig?</h4>
+        <div class="cs">Variabele wedstrijd: <select id="varMatch"></select></div>
+        <div id="ftResults"></div>
+      </div>
+      <div class="card">
+        <h4>Wie tref je wanneer?</h4>
+        <div class="cs">Nederland (rij) tegen tegenstander (kolom). <b class="mono" style="color:var(--k)">K</b> kwart · <b class="mono" style="color:var(--h)">H</b> halve · <b class="mono" style="color:var(--f)">F</b> finale.</div>
+        <div class="mm" id="mmGrid"></div>
+        <div id="liveMeet" style="margin-top:14px;font-size:13.5px;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-sterkte">
+    <div class="banner"><b>Sterkte-inschatting</b> op basis van masters O50-historie (WK 2016 & 2024). Aanpassen kan — dat is een scenario en pauzeert live-updates.</div>
+    <table id="strengthTable"></table>
+  </div>
+
+  <footer>WMH 2026 · 50 Men Pool A · zelfbijwerkend via data.json · <span id="ftUpdated"></span></footer>
+</div>
+
+<script>
+/* ---------- CONFIG ---------- */
+function resolveDataUrl(){
+  // Op GitHub Pages (owner.github.io/repo/) automatisch de raw-bron gebruiken:
+  // snellere verversing, geen Pages-cache. Anders terugvallen op ./data.json.
+  try{
+    const host=location.hostname;
+    if(host.endsWith('github.io')){
+      const owner=host.split('.')[0];
+      const repo=location.pathname.split('/').filter(Boolean)[0];
+      if(owner&&repo) return `https://raw.githubusercontent.com/${owner}/${repo}/main/data.json`;
+    }
+  }catch(e){}
+  return './data.json';
+}
+const DATA_URL=resolveDataUrl();   // co-worker overschrijft data.json dagelijks
+const POLL_MS=5*60*1000;           // elke 5 min verversen
+
+/* ---------- BASISDATA ---------- */
+const TEAMS=[
+  {code:'GER',name:'Duitsland',rating:90},{code:'AUS',name:'Australië',rating:90},
+  {code:'ARG',name:'Argentinië',rating:84},{code:'NZL',name:'Nieuw-Zeeland',rating:83},
+  {code:'ENG',name:'Engeland',rating:80},{code:'RSA',name:'Zuid-Afrika',rating:77},
+  {code:'NED',name:'Nederland',rating:74},{code:'ESP',name:'Spanje',rating:64},
+  {code:'MAS',name:'Maleisië',rating:62},{code:'IRL',name:'Ierland',rating:60},
+  {code:'SCO',name:'Schotland',rating:58},{code:'BEL',name:'België',rating:57},
+  {code:'WAL',name:'Wales',rating:54},{code:'FRA',name:'Frankrijk',rating:52},
+  {code:'JPN',name:'Japan',rating:50},{code:'CHI',name:'Chili',rating:49},
+  {code:'KEN',name:'Kenia',rating:46},{code:'SGP',name:'Singapore',rating:45},
+  {code:'HKG',name:'Hongkong',rating:44},{code:'USA',name:'Verenigde Staten',rating:43},
+  {code:'SRI',name:'Sri Lanka',rating:40},{code:'BAN',name:'Bangladesh',rating:38},
+];
+const RATING={},NAME={}; TEAMS.forEach(t=>{RATING[t.code]=t.rating;NAME[t.code]=t.name;});
+const DAYS={1:'Donderdag 23 jul',2:'Vrijdag 24 jul',3:'Zaterdag 25 jul',4:'Zondag 26 jul',5:'Maandag 27 jul'};
+let MATCHES=[
+  {d:1,h:'ARG',a:'JPN'},{d:1,h:'CHI',a:'SRI'},{d:1,h:'NED',a:'NZL'},{d:1,h:'SCO',a:'ENG'},
+  {d:1,h:'RSA',a:'BAN'},{d:1,h:'GER',a:'WAL'},{d:1,h:'MAS',a:'KEN'},{d:1,h:'HKG',a:'AUS'},{d:1,h:'FRA',a:'ESP'},
+  {d:2,h:'IRL',a:'SGP'},{d:2,h:'ENG',a:'RSA'},{d:2,h:'NZL',a:'MAS'},{d:2,h:'WAL',a:'USA'},{d:2,h:'KEN',a:'FRA'},{d:2,h:'BEL',a:'HKG'},
+  {d:3,h:'SGP',a:'GER'},{d:3,h:'SRI',a:'SCO'},{d:3,h:'ESP',a:'ARG'},{d:3,h:'BAN',a:'IRL'},{d:3,h:'USA',a:'NED'},{d:3,h:'JPN',a:'BEL'},{d:3,h:'AUS',a:'CHI'},
+  {d:4,h:'GER',a:'IRL'},{d:4,h:'BAN',a:'ENG'},{d:4,h:'ARG',a:'FRA'},{d:4,h:'KEN',a:'NZL'},{d:4,h:'RSA',a:'SCO'},{d:4,h:'SRI',a:'AUS'},{d:4,h:'MAS',a:'NED'},
+  {d:5,h:'NZL',a:'USA'},{d:5,h:'BEL',a:'ARG'},{d:5,h:'IRL',a:'RSA'},{d:5,h:'ENG',a:'SRI'},{d:5,h:'FRA',a:'MAS'},{d:5,h:'ESP',a:'KEN'},{d:5,h:'SCO',a:'CHI'},{d:5,h:'SGP',a:'BAN'},{d:5,h:'NED',a:'WAL'},{d:5,h:'HKG',a:'JPN'},{d:5,h:'AUS',a:'BEL'},{d:5,h:'CHI',a:'HKG'},{d:5,h:'USA',a:'GER'},{d:5,h:'JPN',a:'ESP'},{d:5,h:'WAL',a:'SGP'},
+];
+MATCHES.forEach((m,i)=>{m.id=i;m.hs=null;m.as=null;});
+
+let LIVE=true, PROJECTION=null, UPDATED=null, pollTimer=null, gotData=false;
+
+/* ---------- PREDICTIE (fallback) ---------- */
+function predictScore(h,a){
+  const gd=Math.round((RATING[h]-RATING[a])/8),ag=Math.abs(gd);
+  const win=Math.max(2,Math.min(7,2+Math.round(ag/2))),lose=Math.max(0,win-ag);
+  if(gd>0)return[win,lose]; if(gd<0)return[lose,win]; return[2,2];
+}
+
+/* ---------- STANDINGS ---------- */
+function h2h(ac,bc){
+  for(const m of MATCHES){ if(m.hs===null||m.as===null)continue;
+    if(m.h===ac&&m.a===bc)return m.hs>m.as?1:(m.hs<m.as?-1:0);
+    if(m.h===bc&&m.a===ac)return m.as>m.hs?1:(m.as<m.hs?-1:0);}
+  return 0;
+}
+function computeStandings(){
+  const s={}; TEAMS.forEach(t=>s[t.code]={code:t.code,pld:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0});
+  MATCHES.forEach(m=>{ if(m.hs===null||m.as===null)return; const H=s[m.h],A=s[m.a];
+    H.pld++;A.pld++;H.gf+=m.hs;H.ga+=m.as;A.gf+=m.as;A.ga+=m.hs;
+    if(m.hs>m.as){H.w++;A.l++;H.pts+=3;}else if(m.hs<m.as){A.w++;H.l++;A.pts+=3;}else{H.d++;A.d++;H.pts++;A.pts++;}});
+  const arr=Object.values(s); arr.forEach(t=>t.gd=t.gf-t.ga);
+  arr.sort((a,b)=>{ if(b.pts!==a.pts)return b.pts-a.pts; if(b.gd!==a.gd)return b.gd-a.gd; if(b.gf!==a.gf)return b.gf-a.gf;
+    const hh=h2h(a.code,b.code); if(hh!==0)return -hh; if(RATING[b.code]!==RATING[a.code])return RATING[b.code]-RATING[a.code]; return a.code.localeCompare(b.code);});
+  const pos={}; arr.forEach((t,i)=>pos[t.code]=i+1); return {arr,pos};
+}
+
+/* ---------- BRACKET ---------- */
+const QF_PARTNER={1:8,8:1,4:5,5:4,2:7,7:2,3:6,6:3};
+function half(p){return[1,4,5,8].includes(p)?'top':([2,3,6,7].includes(p)?'bot':null);}
+function meetingRound(pa,pb){ if(pa>8||pb>8||!pa||!pb)return'X'; if(QF_PARTNER[pa]===pb)return'K'; if(half(pa)===half(pb))return'H'; return'F';}
+const ROUND_LABEL={K:'kwartfinale',H:'halve finale',F:'finale',X:'—'};
+function flagColor(c){return c==='NED'?'#F5811E':(c==='AUS'?'#16A67B':(c==='ENG'?'#E0504E':'#3A4650'));}
+
+/* ---------- PROJECTIE (fallback als data.json er geen meelevert) ---------- */
+function deterministicProjection(){
+  const real=MATCHES.map(m=>[m.hs,m.as]);
+  const setAll=(fn)=>{MATCHES.forEach((m,i)=>{ if(real[i][0]!==null){m.hs=real[i][0];m.as=real[i][1];return;} fn(m);});};
+  const restore=()=>MATCHES.forEach((m,i)=>{m.hs=real[i][0];m.as=real[i][1];});
+  setAll(m=>{const[hs,as]=predictScore(m.h,m.a);m.hs=hs;m.as=as;}); let exp=computeStandings().pos['NED'];
+  setAll(m=>{const ned=(m.h==='NED'||m.a==='NED'); if(ned){const w=5,l=0; if(m.h==='NED'){m.hs=w;m.as=l;}else{m.hs=l;m.as=w;}}else{const[hs,as]=predictScore(m.h,m.a);m.hs=hs;m.as=as;}}); let best=computeStandings().pos['NED'];
+  setAll(m=>{const ned=(m.h==='NED'||m.a==='NED'); if(ned){const w=0,l=3; if(m.h==='NED'){m.hs=w;m.as=l;}else{m.hs=l;m.as=w;}}else{const[hs,as]=predictScore(m.h,m.a);m.hs=hs;m.as=as;}}); let worst=computeStandings().pos['NED'];
+  restore(); return {expected:exp,p10:Math.min(best,worst),p90:Math.max(best,worst)};
+}
+
+/* ---------- RENDER ---------- */
+function renderStatus(){
+  const {pos}=computeStandings(); const nedP=pos['NED'],ausP=pos['AUS'],engP=pos['ENG'];
+  const meetChip=(p1,p2)=>{const r=meetingRound(p1,p2);const cls=r==='X'?'n':r.toLowerCase();const txt=r==='X'?'niet in top 8':ROUND_LABEL[r];return `<span class="rb ${cls}">${r==='X'?'—':r}</span> ${txt}`;};
+  const proj=PROJECTION||deterministicProjection();
+  document.getElementById('status').innerHTML=`
+    <div class="scard ned"><div class="lbl">Nederland — plek nu</div><div class="big">${nedP}<span style="font-size:15px;color:var(--faint)">e</span></div>
+      <div class="meet">verwacht: ${proj.expected}e (${proj.p10}e–${proj.p90}e)<br>vs AUS: ${meetChip(nedP,ausP)}<br>vs ENG: ${meetChip(nedP,engP)}</div></div>
+    <div class="scard"><div class="lbl">Australië — plek</div><div class="big" style="color:var(--aus)">${ausP}<span style="font-size:15px;color:var(--faint)">e</span></div><div class="meet">${ausP<=8?'in de kwartfinales':'buiten top 8'}</div></div>
+    <div class="scard"><div class="lbl">Engeland — plek</div><div class="big" style="color:var(--eng)">${engP}<span style="font-size:15px;color:var(--faint)">e</span></div><div class="meet">${engP<=8?'in de kwartfinales':'buiten top 8'}</div></div>`;
+}
+function renderProjCard(){
+  const proj=PROJECTION||deterministicProjection(); const hasP=PROJECTION&&PROJECTION.pTop8!=null;
+  const pct=v=>v==null?'–':Math.round(v*100)+'%';
+  document.getElementById('projCard').innerHTML=`
+    <div><div class="plbl">Verwachte eindplek</div><div class="exp">${proj.expected}<small>e</small></div><div class="hint">10–90%: ${proj.p10}e–${proj.p90}e</div></div>
+    <div class="probs">
+      <div class="prob"><div class="pv" style="color:var(--good)">${hasP?pct(PROJECTION.pTop8):'–'}</div><div class="pn">top 8</div></div>
+      <div class="prob"><div class="pv" style="color:var(--h)">${hasP?pct(PROJECTION.pTop4):'–'}</div><div class="pn">top 4</div></div>
+      <div class="prob"><div class="pv" style="color:var(--ned)">${hasP?pct(PROJECTION.pTop2):'–'}</div><div class="pn">top 2</div></div>
+    </div>`;
+}
+function renderStand(){
+  const {arr}=computeStandings();
+  const rows=arr.map((t,i)=>{const p=i+1;const cls=t.code==='NED'?'ned':(t.code==='AUS'?'aus':(t.code==='ENG'?'eng':''));const q8=p<=8?'q8':'';
+    let cut=''; if(p===8)cut=`<tr class="cutline"><td colspan="10"></td></tr><tr><td colspan="10" class="cuttxt">▲ top 8 — kwartfinales · ▼ klassificatie</td></tr>`;
+    return `<tr class="${cls} ${q8}"><td class="pos">${p}</td><td class="l tm"><span class="flag" style="background:${flagColor(t.code)}"></span>${NAME[t.code]}</td><td>${t.pld}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td>${t.gd>0?'+':''}${t.gd}</td><td><b>${t.pts}</b></td></tr>${cut}`;}).join('');
+  document.getElementById('standTable').innerHTML=`<thead><tr><th class="l">#</th><th class="l">Team</th><th>G</th><th>W</th><th>G</th><th>V</th><th>DV</th><th>DT</th><th>DS</th><th>Ptn</th></tr></thead><tbody>${rows}</tbody>`;
+}
+function renderMatches(){
+  let html='';
+  for(let d=1;d<=5;d++){ const ms=MATCHES.filter(m=>m.d===d); html+=`<div class="day"><h3>${DAYS[d]}</h3>`;
+    ms.forEach(m=>{const isNed=(m.h==='NED'||m.a==='NED');
+      html+=`<div class="mrow ${isNed?'nedm':''}"><div class="thome"><span class="tcol ${m.h}">${NAME[m.h]}</span></div>
+        <div class="sc"><input class="score" type="number" min="0" max="30" data-id="${m.id}" data-side="h" value="${m.hs??''}"><span style="color:var(--faint)">–</span><input class="score" type="number" min="0" max="30" data-id="${m.id}" data-side="a" value="${m.as??''}"></div>
+        <div class="taway"><span class="tcol ${m.a}">${NAME[m.a]}</span></div></div>`;});
+    html+='</div>';}
+  document.getElementById('matchList').innerHTML=html;
+  document.querySelectorAll('#matchList input.score').forEach(inp=>inp.addEventListener('input',e=>{
+    goScenario(); const id=+e.target.dataset.id,side=e.target.dataset.side;
+    const v=e.target.value===''?null:Math.max(0,Math.min(30,parseInt(e.target.value)||0));
+    MATCHES[id][side==='h'?'hs':'as']=v; refreshDerived();}));
+}
+function renderBracket(){
+  const {arr,pos}=computeStandings(); const seed={}; arr.forEach((t,i)=>{if(i<8)seed[i+1]=t.code;});
+  const nedP=pos['NED'],ausP=pos['AUS'],engP=pos['ENG'];
+  const slot=p=>{const c=seed[p];return `<div class="slot ${c||''}"><span class="sd">${p}e</span><span class="st">${c?NAME[c]:'—'}</span></div>`;};
+  document.getElementById('bracket').innerHTML=`
+    <div class="bhalf"><h4>Bovenste helft → Semi M11</h4><div class="qf"><div class="ql">QF M4 · 1e v 8e</div>${slot(1)}${slot(8)}</div><div class="qf"><div class="ql">QF M1 · 4e v 5e</div>${slot(4)}${slot(5)}</div></div>
+    <div class="bhalf"><h4>Onderste helft → Semi M12</h4><div class="qf"><div class="ql">QF M3 · 2e v 7e</div>${slot(2)}${slot(7)}</div><div class="qf"><div class="ql">QF M2 · 3e v 6e</div>${slot(3)}${slot(6)}</div></div>`;
+  let note='';
+  if(nedP>8){note=`<b>Nederland staat ${nedP}e</b> — buiten de top 8, dus het klassificatietraject.`;}
+  else{const partner=QF_PARTNER[nedP],opp=seed[partner],rA=meetingRound(nedP,ausP),rE=meetingRound(nedP,engP);
+    note=`<b>Nederland staat ${nedP}e.</b> Kwartfinale tegen de ${partner}e (${opp?NAME[opp]:'—'}). Australië tref je ${rA==='X'?'niet (buiten top 8)':'in de '+ROUND_LABEL[rA]}, Engeland ${rE==='X'?'niet (buiten top 8)':'in de '+ROUND_LABEL[rE]}.`;}
+  document.getElementById('brkNote').innerHTML=note;
+}
+function tierOf(r){if(r>=82)return'Elite';if(r>=72)return'Sterk';if(r>=56)return'Boven-mid';if(r>=48)return'Midden';return'Onderin';}
+function renderStrength(){
+  const sorted=[...TEAMS].sort((a,b)=>b.rating-a.rating);
+  const rows=sorted.map(t=>{const cls=t.code==='NED'?'ned':(t.code==='AUS'?'aus':(t.code==='ENG'?'eng':''));
+    return `<tr class="${cls}"><td class="l tm"><span class="flag" style="background:${flagColor(t.code)}"></span>${NAME[t.code]}</td><td class="l"><span class="tier">${tierOf(t.rating)}</span></td><td><input class="rating" type="number" min="1" max="99" data-code="${t.code}" value="${t.rating}"></td></tr>`;}).join('');
+  document.getElementById('strengthTable').innerHTML=`<thead><tr><th class="l">Team</th><th class="l">Tier</th><th>Rating</th></tr></thead><tbody>${rows}</tbody>`;
+  document.querySelectorAll('#strengthTable input.rating').forEach(inp=>inp.addEventListener('input',e=>{
+    goScenario(); const c=e.target.dataset.code,v=Math.max(1,Math.min(99,parseInt(e.target.value)||1));
+    RATING[c]=v; const tt=TEAMS.find(x=>x.code===c); if(tt)tt.rating=v; refreshDerived();}));
+}
+function renderVarMatchOptions(){
+  const sel=document.getElementById('varMatch'); const nedMs=MATCHES.filter(m=>m.h==='NED'||m.a==='NED');
+  sel.innerHTML=nedMs.map(m=>{const opp=m.h==='NED'?m.a:m.h,home=m.h==='NED';return `<option value="${m.id}">${DAYS[m.d].split(' ')[0]} · NED ${home?'(thuis)':'(uit)'} v ${NAME[opp]}</option>`;}).join('');
+  sel.value=nedMs[nedMs.length-1].id;
+}
+function computeNedPosWith(mid,hs,as){const m=MATCHES[mid],oh=m.hs,oa=m.as;m.hs=hs;m.as=as;const p=computeStandings().pos['NED'];m.hs=oh;m.as=oa;return p;}
+function renderFinetune(){
+  const sel=document.getElementById('varMatch'); if(!sel.value){renderMeetingMatrix();return;}
+  const mid=+sel.value,m=MATCHES[mid],nedHome=(m.h==='NED');
+  const targets=[{n:1,l:'Poulewinnaar (1e)'},{n:2,l:'Top 2'},{n:4,l:'Top 4'},{n:8,l:'Top 8 (kwartfinale)'}];
+  let html='';
+  targets.forEach(t=>{let best=null,ever=false;
+    for(let ng=0;ng<=12;ng++)for(let og=0;og<=12;og++){const hs=nedHome?ng:og,as=nedHome?og:ng;const p=computeNedPosWith(mid,hs,as);if(p<=t.n){ever=true;const margin=ng-og;if(!best||margin<best.margin||(margin===best.margin&&(ng+og)<(best.ng+best.og)))best={margin,ng,og};}}
+    let label,cls,ex='';
+    if(!ever){label='Niet meer haalbaar';cls='res-no';}
+    else if(best.margin<0){label='Ook bij verlies veilig';cls='res-safe';ex=`bijv. ${best.ng}–${best.og}`;}
+    else if(best.margin===0){label='Gelijkspel is genoeg';cls='res-safe';ex=`bijv. ${best.ng}–${best.og}`;}
+    else{label=`Winnen met +${best.margin}`;cls='res-need';ex=`min. bijv. ${best.ng}–${best.og}`;}
+    html+=`<div class="ftrow"><div><div style="font-size:13px;color:var(--muted)">${t.l}</div><div class="goal ${cls}">${label}</div></div><div class="ex">${ex}</div></div>`;});
+  document.getElementById('ftResults').innerHTML=html; renderMeetingMatrix();
+}
+function renderMeetingMatrix(){
+  const {pos}=computeStandings(); const nedP=pos['NED'],ausP=pos['AUS'],engP=pos['ENG'];
+  let html='<div class="hd"></div>'; for(let c=1;c<=8;c++)html+=`<div class="hd">${c}e</div>`;
+  for(let r=1;r<=8;r++){html+=`<div class="hd">${r}e</div>`;
+    for(let c=1;c<=8;c++){if(r===c){html+=`<div class="cell cX">–</div>`;continue;}const rd=meetingRound(r,c);const live=(nedP===r&&(ausP===c||engP===c))?'live':'';html+=`<div class="cell c${rd} ${live}">${rd}</div>`;}}
+  document.getElementById('mmGrid').innerHTML=html;
+  let lm='';
+  if(nedP<=8){const rA=meetingRound(nedP,ausP),rE=meetingRound(nedP,engP);lm=`Bij de huidige stand (NED ${nedP}e): Australië ${ausP<=8?'in de '+ROUND_LABEL[rA]:'buiten top 8'}, Engeland ${engP<=8?'in de '+ROUND_LABEL[rE]:'buiten top 8'}. Oranje omlijnd = live.`;}
+  else lm=`Nederland staat nu ${nedP}e — buiten de top 8.`;
+  document.getElementById('liveMeet').innerHTML=lm;
+}
+
+/* ---------- REFRESH ---------- */
+function refreshDerived(){renderStatus();renderProjCard();renderStand();renderBracket();if(document.getElementById('view-finetune').classList.contains('active'))renderFinetune();}
+function fullRender(){renderStatus();renderProjCard();renderStand();renderMatches();renderBracket();renderStrength();renderVarMatchOptions();renderFinetune();updateLiveBar();}
+
+/* ---------- LIVE / SCENARIO ---------- */
+function updateLiveBar(){
+  const bar=document.getElementById('livebar'),dot=document.getElementById('ldot'),txt=document.getElementById('livetxt');
+  const fmt=UPDATED?new Date(UPDATED).toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):null;
+  document.getElementById('ftUpdated').textContent=fmt?('laatst bijgewerkt '+fmt):'nog geen live data';
+  if(LIVE){bar.classList.remove('scenario');dot.className='ldot on';txt.textContent=gotData?('Live — laatst bijgewerkt '+(fmt||'onbekend')):'Live — nog geen data.json gevonden (voorspelling getoond)';}
+  else{bar.classList.add('scenario');dot.className='ldot off';txt.textContent='Scenariomodus — live-updates gepauzeerd';}
+}
+function goScenario(){ if(LIVE){LIVE=false; if(pollTimer){clearInterval(pollTimer);pollTimer=null;} updateLiveBar();} }
+document.getElementById('backLive').addEventListener('click',()=>{LIVE=true;startPolling();fetchData();});
+
+async function fetchData(){
+  try{
+    const r=await fetch(DATA_URL+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok)throw 0;
+    const d=await r.json();
+    if(d.ratings)Object.keys(d.ratings).forEach(c=>{if(RATING[c]!==undefined){RATING[c]=d.ratings[c];const t=TEAMS.find(x=>x.code===c);if(t)t.rating=d.ratings[c];}});
+    if(Array.isArray(d.scores))d.scores.forEach(s=>{const m=MATCHES.find(x=>x.h===s.h&&x.a===s.a);if(m){m.hs=(s.hs===undefined?null:s.hs);m.as=(s.as===undefined?null:s.as);}});
+    PROJECTION=d.projection||null; UPDATED=d.updated||null; gotData=true;
+  }catch(e){ if(!gotData){/* eerste keer mislukt: voorspelling tonen */ MATCHES.forEach(m=>{const[hs,as]=predictScore(m.h,m.a);m.hs=hs;m.as=as;});} }
+  fullRender();
+}
+function startPolling(){ if(pollTimer)clearInterval(pollTimer); pollTimer=setInterval(()=>{if(LIVE)fetchData();},POLL_MS); }
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&LIVE)fetchData();});
+
+/* ---------- TABS ---------- */
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  tab.classList.add('active'); document.getElementById('view-'+tab.dataset.v).classList.add('active');
+  if(tab.dataset.v==='finetune')renderFinetune();}));
+document.getElementById('varMatch').addEventListener('change',renderFinetune);
+
+/* ---------- INIT ---------- */
+fetchData(); startPolling();
+</script>
+</body>
+</html>

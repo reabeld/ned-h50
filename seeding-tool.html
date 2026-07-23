@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NED M50 — Seeding & Bracket-pad</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6f9;color:#182233;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:22px;margin:0 0 2px}
+.sub{color:#5a6472;font-size:13px;margin:0 0 16px}
+.card{background:#fff;border:1px solid #e3e7ee;border-radius:12px;padding:16px 18px;margin:12px 0;box-shadow:0 1px 2px rgba(20,30,50,.04)}
+.card h2{font-size:15px;margin:0 0 12px;letter-spacing:.02em;text-transform:uppercase;color:#6b7482}
+.controls{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.ctl label{display:block;font-size:12px;color:#6b7482;margin-bottom:6px;font-weight:600}
+.seg{display:inline-flex;border:1px solid #d3d9e2;border-radius:9px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer;color:#33404f}
+.seg button+button{border-left:1px solid #e3e7ee}
+.seg button.on{background:#e8600a;color:#fff;font-weight:600}
+.big{font-size:34px;font-weight:700;line-height:1;margin:2px 0}
+.big.small{font-size:24px}
+.muted{color:#6b7482;font-size:13px}
+.row{display:flex;gap:22px;flex-wrap:wrap}
+.metric{flex:1;min-width:150px}
+.bar{position:relative;background:#eef1f5;border-radius:6px;height:26px;margin:5px 0;overflow:hidden}
+.bar>span{position:absolute;left:0;top:0;bottom:0;background:#9fb3cd;border-radius:6px}
+.bar.hl>span{background:#e8600a}
+.bar em{position:absolute;left:8px;top:0;line-height:26px;font-style:normal;font-size:12.5px;color:#182233;font-weight:600}
+.bar b{position:absolute;right:8px;top:0;line-height:26px;font-size:12.5px;color:#33404f}
+.seedlbl{display:inline-block;width:34px;text-align:right;margin-right:8px;color:#6b7482;font-size:12px}
+.brk{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.opp{flex:1;min-width:150px;border:1px solid #e3e7ee;border-radius:10px;padding:10px 12px}
+.opp .stage{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8a929e;font-weight:600}
+.opp .team{font-size:18px;font-weight:700;margin-top:2px}
+.opp .rt{font-size:12px;color:#6b7482}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:6px}
+.s-hi{background:#fbe3e0;color:#b0392b}.s-mid{background:#fdeede;color:#b9770f}.s-lo{background:#e3f4e9;color:#1e7a45}
+.verdict{margin-top:10px;padding:10px 12px;border-radius:9px;background:#f0f4f9;font-size:14px}
+.tag{display:inline-block;background:#eef1f5;border-radius:6px;padding:1px 7px;font-size:12px;color:#4a5568;margin:0 3px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid #eef1f5}
+th{color:#8a929e;font-weight:600;font-size:11px;text-transform:uppercase}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:12.5px;color:#6b7482}
+.warn{background:#fff8e6;border:1px solid #f3e2b0;border-radius:9px;padding:10px 12px;font-size:13px;color:#6b5a1e}
+.spin{color:#e8600a;font-weight:600}
+a.dl{color:#e8600a}
+.legend{font-size:12px;color:#6b7482;margin-top:8px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 3px 0 10px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>NED M50 — Seeding &amp; Bracket-pad</h1>
+  <p class="sub" id="sub">WK Rotterdam 2026 · Poule A · projectie o.b.v. huidige uitslagen — <span id="snap"></span></p>
+
+  <div class="card">
+    <div class="controls">
+      <div class="ctl">
+        <label>Doel van NED</label>
+        <div class="seg" id="segTarget">
+          <button data-t="1" >Poule winnen (1e)</button>
+          <button data-t="2" class="on">Top 2</button>
+          <button data-t="4">Top 4</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label>ESP-rating (open discussiepunt)</label>
+        <div class="seg" id="segEsp">
+          <button data-e="86" class="on">86 (repo)</button>
+          <button data-e="58">58 (SKILL)</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label>Bracket-scenario: NED eindigt als…</label>
+        <div class="seg" id="segSeed"></div>
+      </div>
+    </div>
+    <div class="legend" id="status"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="goalTitle">Kans &amp; benodigd doelsaldo</h2>
+    <div class="row">
+      <div class="metric">
+        <div class="muted" id="probLbl">Kans met huidige vorm</div>
+        <div class="big" id="probVal">—</div>
+        <div class="muted" id="probSub"></div>
+      </div>
+      <div class="metric" style="flex:2;min-width:260px">
+        <div class="muted">Benodigd doelsaldo uit de 3 resterende duels (USA · MAS · WAL)</div>
+        <div id="gdAdvice" style="margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="verdict" id="goalVerdict"></div>
+  </div>
+
+  <div class="card">
+    <h2>Kansverdeling eindplek (poule)</h2>
+    <div id="seedBars"></div>
+    <div class="legend">Oranje = meest waarschijnlijke eindplek van NED.</div>
+  </div>
+
+  <div class="card">
+    <h2 id="pathTitle">Bracket-pad</h2>
+    <div class="note" id="pathIntro"></div>
+    <div class="brk" id="pathCards"></div>
+    <div class="verdict" id="pathVerdict"></div>
+    <div class="legend">
+      Sterkte tegenstander:
+      <span class="dot" style="background:#c0392b"></span>topploeg (rating ≥ 82)
+      <span class="dot" style="background:#d68910"></span>sterk (78–81)
+      <span class="dot" style="background:#27ae60"></span>haalbaar (&lt; 78)
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Waarom seeding telt</h2>
+    <p class="note" style="margin-top:0">De bracket koppelt poule-eindplekken vast: <span class="tag">QF: 1–8 · 4–5 · 2–7 · 3–6</span>. Bovenste helft = seeds {1,8,4,5}, onderste helft = {2,7,3,6}. Een tegenstander tref je in de <b>kwartfinale</b> bij hetzelfde QF-paar, in de <b>halve finale</b> bij dezelfde helft/ander paar, in de <b>finale</b> bij de andere helft. Hoe hoger NED eindigt, hoe zwakker de kwartfinale-tegenstander (1e → 8e, 2e → 7e) en hoe later je de andere topteams treft.</p>
+    <table id="modalTbl"><thead><tr><th>Seed</th><th>Meest waarschijnlijke ploeg</th><th class="n">rating</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="warn" id="espNote"></div>
+  <p class="note" style="margin-top:14px">Methode: Monte-Carlo (≈15.000 sims per herberekening), zelfde model als de nachtelijke brief: winkans p=1/(1+10^(−Δrating/15)), gelijkspel ~20% bij Δ&lt;6 anders ~10%, marge ≈ |Δ|/8. Gespeelde uitslagen staan vast; alleen resterende duels worden gesimuleerd. Doelsaldo-drempels: NED wint alle 3 resterende duels, overige duels gesimuleerd; drempel = kleinste totale zegemarge met ≥50% / ≥90% kans op het doel.</p>
+</div>
+
+<script>
+const DATA = {"ratings":{"AUS":90,"NED":89,"ENG":87,"GER":85,"ARG":83,"NZL":82,"RSA":78,"IRL":61,"MAS":60,"ESP":86,"SCO":57,"BEL":57,"FRA":54,"WAL":53,"JPN":50,"CHI":49,"KEN":46,"SGP":45,"HKG":44,"USA":43,"SRI":40,"BAN":38},"scores":[["ARG","JPN",2,1],["CHI","SRI",4,1],["NED","NZL",1,0],["SCO","ENG",1,3],["RSA","BAN",4,0],["GER","WAL",2,2],["MAS","KEN",4,1],["HKG","AUS",1,6],["FRA","ESP",1,1],["IRL","SGP",null,null],["ENG","RSA",null,null],["NZL","MAS",null,null],["WAL","USA",null,null],["KEN","FRA",null,null],["BEL","HKG",null,null],["SGP","GER",null,null],["SRI","SCO",null,null],["ESP","ARG",null,null],["BAN","IRL",null,null],["USA","NED",null,null],["JPN","BEL",null,null],["AUS","CHI",null,null],["GER","IRL",null,null],["BAN","ENG",null,null],["ARG","FRA",null,null],["KEN","NZL",null,null],["RSA","SCO",null,null],["SRI","AUS",null,null],["MAS","NED",null,null],["NZL","USA",null,null],["BEL","ARG",null,null],["IRL","RSA",null,null],["ENG","SRI",null,null],["FRA","MAS",null,null],["ESP","KEN",null,null],["SCO","CHI",null,null],["SGP","BAN",null,null],["NED","WAL",null,null],["HKG","JPN",null,null],["AUS","BEL",null,null],["CHI","HKG",null,null],["USA","GER",null,null],["JPN","ESP",null,null],["WAL","SGP",null,null]]};
+const TEAMS = Object.keys(DATA.ratings);
+const NAME = {AUS:"Australië",NED:"Nederland",ENG:"Engeland",GER:"Duitsland",ARG:"Argentinië",NZL:"Nieuw-Zeeland",RSA:"Zuid-Afrika",IRL:"Ierland",MAS:"Maleisië",ESP:"Spanje",SCO:"Schotland",BEL:"België",FRA:"Frankrijk",WAL:"Wales",JPN:"Japan",CHI:"Chili",KEN:"Kenia",SGP:"Singapore",HKG:"Hongkong",USA:"USA",SRI:"Sri Lanka",BAN:"Bangladesh"};
+const S=15.0;
+let ESP=86, TARGET=2, PICKSEED=null;
+
+// seeded PRNG
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function pwin(dl){return 1/(1+Math.pow(10,-dl/S));}
+function simMatch(rng,rh,ra){
+  const dl=rh-ra, dp=Math.abs(dl)<6?0.20:0.10;
+  if(rng()<dp){const g=1+Math.floor(rng()*3);return[g,g];}
+  let m=Math.round(Math.abs(dl)/8+(-1.5+rng()*3)); if(m<1)m=1;
+  const lo=Math.floor(rng()*3), wi=lo+m;
+  return rng()<pwin(dl)?[wi,lo]:[lo,wi];
+}
+function ratings(){const r=Object.assign({},DATA.ratings); r.ESP=ESP; return r;}
+
+// One full simulation. fixedNED: {"USA|NED":[hs,as],...} or null
+function simulate(nsims, fixedNED, seed){
+  const R=ratings(); const rng=mulberry32(seed>>>0);
+  const idx={}; TEAMS.forEach((t,i)=>idx[t]=i);
+  const seedCount=new Array(23).fill(0);      // NED finishing pos histogram (1..22)
+  const teamAt=TEAMS.map(()=>new Array(9).fill(0)); // teamAt[teamIdx][seed 1..8]
+  let ned1=0, ausSlip=0, ned1AusSlip=0;
+  for(let s=0;s<nsims;s++){
+    const pts=new Array(22).fill(0), gf=new Array(22).fill(0), ga=new Array(22).fill(0);
+    let ausSlipped=false;
+    for(const m of DATA.scores){
+      const h=m[0],a=m[1]; let hs=m[2],as=m[3];
+      if(hs===null){
+        const key=h+"|"+a;
+        if(fixedNED&&fixedNED[key]){hs=fixedNED[key][0];as=fixedNED[key][1];}
+        else{const r=simMatch(rng,R[h],R[a]);hs=r[0];as=r[1];}
+      }
+      const ih=idx[h],ia=idx[a];
+      gf[ih]+=hs;ga[ih]+=as;gf[ia]+=as;ga[ia]+=hs;
+      if(hs>as)pts[ih]+=3; else if(hs<as)pts[ia]+=3; else {pts[ih]++;pts[ia]++;}
+      if(h==="AUS"||a==="AUS"){ if(hs===as) ausSlipped=true; else { const w=hs>as?h:a; if(w!=="AUS") ausSlipped=true; } }
+    }
+    const order=TEAMS.map((t,i)=>i);
+    order.sort((x,y)=>{
+      if(pts[y]!==pts[x])return pts[y]-pts[x];
+      const gy=gf[y]-ga[y], gx=gf[x]-ga[x]; if(gy!==gx)return gy-gx;
+      if(gf[y]!==gf[x])return gf[y]-gf[x];
+      return rng()-0.5;
+    });
+    const pos=order.indexOf(idx.NED)+1; seedCount[pos]++;
+    for(let k=0;k<8;k++){teamAt[order[k]][k+1]++;}
+    if(pos===1)ned1++;
+    if(ausSlipped){ausSlip++; if(pos===1)ned1AusSlip++;}
+  }
+  return {seedCount,teamAt,idx,ned1,ausSlip,ned1AusSlip,nsims};
+}
+
+function marginFixed(mtot){
+  const base=[1,1,1]; let ex=mtot-3,i=0; while(ex>0){base[i%3]++;ex--;i++;}
+  // USA|NED (NED away), MAS|NED (NED away), NED|WAL (NED home)
+  return {"USA|NED":[0,base[0]], "MAS|NED":[0,base[1]], "NED|WAL":[base[2],0]};
+}
+
+const STRONG=t=>ratings()[t]>=78;
+function sclass(t){const r=ratings()[t]; return r>=82?"s-hi":(r>=78?"s-mid":"s-lo");}
+function sword(t){const r=ratings()[t]; return r>=82?"topploeg":(r>=78?"sterk":"haalbaar");}
+
+// modal team at seed, excluding NED (and optionally a used set)
+function modalTeam(res,seed,used){
+  const arr=TEAMS.map((t,i)=>[t,res.teamAt[i][seed]]).filter(x=>x[0]!=="NED"&&!used.has(x[0]));
+  arr.sort((a,b)=>b[1]-a[1]);
+  return arr.length?arr[0][0]:"—";
+}
+
+// QF opponent seed, and semi sibling pair
+const QFOPP={1:8,8:1,4:5,5:4,2:7,7:2,3:6,6:3};
+function semiPair(s){ // returns the other pair's two seeds in same half
+  if(s===1||s===8)return[4,5];
+  if(s===4||s===5)return[1,8];
+  if(s===2||s===7)return[3,6];
+  return[2,7]; // 3 or 6
+}
+function otherHalfTop(s){ // strongest expected team from the other half (final opp)
+  const top=(s===1||s===8||s===4||s===5); // NED top half -> final vs bottom half
+  return top?[2,3]:[1,4]; // candidate seeds of other half's likely finalists
+}
+
+function pct(x){return Math.round(x*100);}
+
+// Real partial standings (played games only) — for the snapshot label
+function realSnapshot(){
+  const R=ratings(); const idx={}; TEAMS.forEach((t,i)=>idx[t]=i);
+  const pts=new Array(22).fill(0),gf=new Array(22).fill(0),ga=new Array(22).fill(0);
+  let played=0;
+  for(const m of DATA.scores){ if(m[2]===null)continue; played++;
+    const ih=idx[m[0]],ia=idx[m[1]],hs=m[2],as=m[3];
+    gf[ih]+=hs;ga[ih]+=as;gf[ia]+=as;ga[ia]+=hs;
+    if(hs>as)pts[ih]+=3;else if(hs<as)pts[ia]+=3;else{pts[ih]++;pts[ia]++;}
+  }
+  const order=TEAMS.map((t,i)=>i).sort((x,y)=>pts[y]-pts[x]||(gf[y]-ga[y])-(gf[x]-ga[x])||gf[y]-gf[x]||x-y);
+  const pos=order.indexOf(idx.NED)+1;
+  return {played,total:DATA.scores.length,pos};
+}
+
+function render(res){
+  const snp=realSnapshot();
+  document.getElementById("snap").textContent = snp.played===0 ? "vóór aanvang — projectie op ratings"
+    : `stand ${snp.played}/${snp.total} gespeeld, NED ${snp.pos}e`;
+  const n=res.nsims;
+  // seed bars
+  let bars="";
+  let modalSeed=1,best=0;
+  for(let k=1;k<=8;k++){if(res.seedCount[k]>best){best=res.seedCount[k];modalSeed=k;}}
+  for(let k=1;k<=8;k++){
+    const p=res.seedCount[k]/n; const w=Math.max(1,pct(p));
+    bars+=`<div><span class="seedlbl">${k}e</span><span style="display:inline-block;width:calc(100% - 46px);vertical-align:middle"><div class="bar ${k===modalSeed?'hl':''}"><span style="width:${Math.min(100,w)}%"></span><em>${pct(p)}%</em></div></span></div>`;
+  }
+  document.getElementById("seedBars").innerHTML=bars;
+
+  // target panel
+  const cum=t=>{let c=0;for(let k=1;k<=t;k++)c+=res.seedCount[k];return c/n;};
+  const gt=document.getElementById("goalTitle");
+  const probVal=document.getElementById("probVal");
+  const probSub=document.getElementById("probSub");
+  const probLbl=document.getElementById("probLbl");
+  const gd=document.getElementById("gdAdvice");
+  const gv=document.getElementById("goalVerdict");
+
+  if(TARGET===1){
+    gt.textContent="Kans op poulewinst (1e) & benodigd doelsaldo";
+    probLbl.textContent="Kans op 1e met huidige vorm";
+    probVal.textContent=pct(res.ned1/n)+"%";
+    probSub.innerHTML=`AUS morst punten in <b>${pct(res.ausSlip/n)}%</b> van de sims — dán is NED 1e in <b>${pct(res.ned1AusSlip/Math.max(1,res.ausSlip))}%</b>.`;
+    gd.innerHTML=`<div class="note">1e worden ligt <b>niet in eigen hand</b>: AUS (rating 90, +5 na dag 1) is de sleutel. Zelfs met 3× grote zeges blijft de kans beperkt zolang AUS wint. Alle drie winnen én fors scoren is <i>nodig</i>, maar pas kansrijk als AUS punten verliest.</div>`;
+    gv.innerHTML=`<b>Advies:</b> speel voor top-2 (in eigen hand) en houd AUS in de gaten — verliest AUS punten tegen bijv. CHI/SRI/BEL, dán vol voor plek 1 door je doelsaldo maximaal op te pompen.`;
+  } else {
+    const tgtName = TARGET===2?"top-2":"top-4";
+    gt.textContent=`Kans op ${tgtName} & benodigd doelsaldo`;
+    probLbl.textContent=`Kans op ${tgtName} met huidige vorm`;
+    probVal.textContent=pct(cum(TARGET))+"%";
+    probSub.textContent = TARGET===2 ? "Top-2 geeft de zwakste kwartfinale (7e/8e seed)." : "Top-4 = zeker geplaatst voor de kwartfinale.";
+    gd.innerHTML=`<span class="spin">doelsaldo berekenen…</span>`;
+    gv.textContent="";
+    // threshold sweep async
+    setTimeout(()=>{
+      const curve=[];
+      for(let mtot=3;mtot<=14;mtot++){
+        const r=simulate(2600, marginFixed(mtot), 777+mtot*13);
+        let c=0;for(let k=1;k<=TARGET;k++)c+=r.seedCount[k];
+        curve.push([mtot,c/r.nsims]);
+      }
+      const m50=curve.find(x=>x[1]>=0.5), m90=curve.find(x=>x[1]>=0.9);
+      const ex=m=>{const b=[1,1,1];let e=m-3,i=0;while(e>0){b[i%3]++;e--;i++;}return`${b[0]}–0, ${b[1]}–0, ${b[2]}–0`;};
+      let html="";
+      if(TARGET===4){
+        html=`<div class="note"><b>Top-4 is gegarandeerd zodra NED alle 3 wint</b> — zelfs met drie krappe 1–0 zeges (${curve[0][1]>=0.999?"100%":pct(curve[0][1])+"%"}). Doelsaldo maakt hier niet uit; focus je energie op top-2.</div>`;
+      } else {
+        const line=curve.map(x=>`<span class="tag">+${x[0]}: ${pct(x[1])}%</span>`).join(" ");
+        html=`<table style="margin-top:2px"><tr><th>Kans-drempel</th><th>Min. totale zegemarge</th><th>Voorbeeld (eindstand doelsaldo)</th></tr>`+
+          `<tr><td>~50%</td><td class="n"><b>${m50?"+"+m50[0]:">+14"}</b></td><td>${m50?ex(m50[0])+" (DS "+(1+m50[0]>0?"+":"")+(1+m50[0])+")":"—"}</td></tr>`+
+          `<tr><td>~90%</td><td class="n"><b>${m90?"+"+m90[0]:">+14"}</b></td><td>${m90?ex(m90[0])+" (DS +"+(1+m90[0])+")":"buiten bereik met 3 zeges alleen"}</td></tr></table>`+
+          `<div class="legend" style="margin-top:8px">Kans per totale zegemarge uit 3 duels: ${line}</div>`;
+      }
+      gd.innerHTML=html;
+      if(TARGET===2){
+        gv.innerHTML=`<b>Advies:</b> 3× winnen levert bij <i>krappe</i> zeges maar ~${pct(curve[0][1])}% top-2 — het verschil zit in <b>goals</b>. NED staat 7e puur door doelsaldo (+1). Tegen <b>USA</b> (zwakste, rating 43) ruim uitlopen is de grootste hefboom; mik op een totaal doelsaldo rond <b>+${m50?m50[0]:10}</b> voor ~50% en <b>+${m90?m90[0]:14}</b> voor ~90%.`;
+      } else {
+        gv.innerHTML=`<b>Advies:</b> top-4 is feitelijk binnen bij 3 zeges. Speel meteen door voor top-2: elke extra goal telt richting de 7e/8e-seed kwartfinale.`;
+      }
+    },30);
+  }
+
+  // modal table
+  const used=new Set();
+  const modal={};
+  for(let k=1;k<=8;k++){const t=modalTeam(res,k,new Set());modal[k]=t;}
+  let tb="";
+  for(let k=1;k<=8;k++){const t=modal[k];tb+=`<tr><td>${k}e</td><td>${t==="NED"?"<b>NED</b>":NAME[t]||t} ${t!=="NED"?`<span class="pill ${sclass(t)}">${sword(t)}</span>`:""}</td><td class="n">${ratings()[t]||"—"}</td></tr>`;}
+  document.querySelector("#modalTbl tbody").innerHTML=tb;
+
+  // bracket path for PICKSEED (default modalSeed)
+  const s=PICKSEED||modalSeed;
+  renderPath(res,s,modal);
+  document.getElementById("pathTitle").textContent=`Bracket-pad als NED ${s}e wordt`;
+  // seed seg active
+  document.querySelectorAll("#segSeed button").forEach(b=>b.classList.toggle("on", (+b.dataset.s)===s));
+}
+
+function renderPath(res,s,modal){
+  const used=new Set(["NED"]);
+  // QF opponent
+  const qfSeed=QFOPP[s]; const qfT=modalTeam(res,qfSeed,used); used.add(qfT);
+  // semi: stronger of sibling pair
+  const [p1,p2]=semiPair(s);
+  let a=modalTeam(res,p1,used); let b=modalTeam(res,p2,new Set([...used,a]));
+  const semiT = (ratings()[a]||0)>=(ratings()[b]||0)?a:b; used.add(semiT);
+  // final: strongest of other half
+  const [f1,f2]=otherHalfTop(s);
+  let fa=modalTeam(res,f1,used); let fb=modalTeam(res,f2,new Set([...used,fa]));
+  const finT=(ratings()[fa]||0)>=(ratings()[fb]||0)?fa:fb;
+
+  const card=(stage,seedTxt,t)=>`<div class="opp"><div class="stage">${stage}</div><div class="team">${NAME[t]||t}</div><div class="rt">${seedTxt} · rating ${ratings()[t]||"—"}</div><span class="pill ${sclass(t)}">${sword(t)}</span></div>`;
+  document.getElementById("pathCards").innerHTML =
+    card("Kwartfinale", qfSeed+"e seed", qfT)+
+    card("Halve finale (verwacht)", "uit "+p1+"e/"+p2+"e", semiT)+
+    card("Finale (verwacht)", "andere helft", finT);
+
+  const half=(s===1||s===8||s===4||s===5)?"bovenste":"onderste";
+  const strongQF=STRONG(qfT), strongSemi=STRONG(semiT);
+  document.getElementById("pathIntro").innerHTML=`NED (${s}e) zit in de <b>${half} helft</b>. Kwartfinale tegen de <b>${qfSeed}e seed</b>; wint NED, dan halve finale tegen de winnaar uit ${p1}e/${p2}e.`;
+  let v;
+  if(!strongQF && !strongSemi) v=`<b>Gunstig pad:</b> geen topploeg vóór de finale — ${NAME[qfT]||qfT} in de kwart en ${NAME[semiT]||semiT} in de halve zijn haalbaar. De sterke tegenstander (${NAME[finT]||finT}) tref je pas in de finale.`;
+  else if(!strongQF && strongSemi) v=`<b>Redelijk pad:</b> haalbare kwartfinale (${NAME[qfT]||qfT}), maar in de halve finale wacht al een sterke ploeg (${NAME[semiT]||semiT}).`;
+  else if(strongQF && !strongSemi) v=`<b>Lastige start:</b> meteen een sterke ploeg in de kwartfinale (${NAME[qfT]||qfT}). Kom je erdoor, dan is de halve finale (${NAME[semiT]||semiT}) haalbaarder.`;
+  else v=`<b>Zwaar pad:</b> zowel kwart- (${NAME[qfT]||qfT}) als halve finale (${NAME[semiT]||semiT}) tegen sterke ploegen. Dit wil je vermijden — eindig hoger.`;
+  document.getElementById("pathVerdict").innerHTML=v;
+}
+
+// ---- controls ----
+function build(){
+  const seg=document.getElementById("segSeed");
+  seg.innerHTML=[1,2,3,4,5,6,7,8].map(k=>`<button data-s="${k}">${k}e</button>`).join("");
+  seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{PICKSEED=+b.dataset.s;recompute(false);});
+  document.querySelectorAll("#segTarget button").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll("#segTarget button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); TARGET=+b.dataset.t; recompute(false);
+  });
+  document.querySelectorAll("#segEsp button").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll("#segEsp button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); ESP=+b.dataset.e; recompute(true);
+  });
+  document.getElementById("espNote").innerHTML=`<b>Let op — open punt:</b> de repo geeft ESP rating <b>86</b>, de SKILL-tabel zegt <b>58</b>. Voor NED’s eigen kansen maakt het weinig uit (top-2 54% vs 52%), maar het bepaalt wél of Spanje als sterke of zwakke ploeg in jouw pad opduikt. Wissel hierboven om het effect te zien.`;
+}
+let lastRes=null;
+function recompute(rerun){
+  document.getElementById("status").innerHTML=`<span class="spin">rekenen…</span>`;
+  setTimeout(()=>{
+    if(rerun||!lastRes){ lastRes=simulate(15000,null,20260717); }
+    render(lastRes);
+    document.getElementById("status").innerHTML=`ESP=${ESP} · doel=${TARGET===1?'1e':(TARGET===2?'top-2':'top-4')} · scenario=NED ${PICKSEED||'meest waarschijnlijke'} · ~15.000 sims`;
+  },30);
+}
+build(); recompute(true);
+</script>
+</body>
+</html>

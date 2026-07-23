@@ -138,7 +138,6 @@
   <div class="livebar" id="livebar">
     <span class="ldot on" id="ldot"></span>
     <span id="livetxt">Live — data laden…</span>
-    <a href="seeding-tool.html" style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ned);background:rgba(245,129,30,.12);border:1px solid rgba(245,129,30,.4);border-radius:6px;padding:5px 10px;text-decoration:none;white-space:nowrap">Seeding &amp; bracket-pad →</a>
     <button class="btn" id="backLive">Terug naar live</button>
   </div>
 
@@ -148,6 +147,7 @@
     <button class="tab active" data-v="stand">Stand</button>
     <button class="tab" data-v="uitslagen">Uitslagen</button>
     <button class="tab" data-v="bracket">Bracket</button>
+    <button class="tab" data-v="seeding">Seeding</button>
     <button class="tab" data-v="finetune">Finetune</button>
     <button class="tab" data-v="sterkte">Sterkte</button>
   </div>
@@ -193,6 +193,17 @@
   <div class="view" id="view-sterkte">
     <div class="banner"><b>Sterkte-inschatting</b> op basis van masters O50-historie (WK 2016 & 2024). Aanpassen kan — dat is een scenario en pauzeert live-updates.</div>
     <table id="strengthTable"></table>
+  </div>
+
+
+  <div class="view" id="view-seeding">
+    <div class="banner">Kansen per poule-eindplek (Monte-Carlo, ~9.000 sims op de huidige of ingevoerde uitslagen), het benodigde doelsaldo voor je doel, en het bijbehorende bracket-pad. <b>Top-2 is het stuurdoel</b> — dat geeft de zwakste kwartfinale (7e/8e seed) en stelt de sterke teams het langst uit.</div>
+    <div class="cs" style="margin-bottom:12px">Doel: <span id="sdTargets"></span></div>
+    <div class="ftgrid">
+      <div class="card"><h4>Kans &amp; benodigd doelsaldo</h4><div id="sdKans" style="font-size:13.5px">rekenen…</div></div>
+      <div class="card"><h4>Kansverdeling eindplek</h4><div id="sdBars"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><h4>Bracket-pad — meest waarschijnlijke eindplek</h4><div id="sdPath"></div><div id="sdVerdict" style="margin-top:10px;font-size:13.5px;color:var(--muted)"></div></div>
   </div>
 
   <footer>WMH 2026 · 50 Men Pool A · zelfbijwerkend via data.json · <span id="ftUpdated"></span></footer>
@@ -389,7 +400,7 @@ function renderMeetingMatrix(){
 }
 
 /* ---------- REFRESH ---------- */
-function refreshDerived(){renderStatus();renderProjCard();renderStand();renderBracket();if(document.getElementById('view-finetune').classList.contains('active'))renderFinetune();}
+function refreshDerived(){renderStatus();renderProjCard();renderStand();renderBracket();if(document.getElementById('view-finetune').classList.contains('active'))renderFinetune();if(document.getElementById('view-seeding').classList.contains('active')&&window.renderSeeding)window.renderSeeding();}
 function fullRender(){renderStatus();renderProjCard();renderStand();renderMatches();renderBracket();renderStrength();renderVarMatchOptions();renderFinetune();updateLiveBar();}
 
 /* ---------- LIVE / SCENARIO ---------- */
@@ -427,5 +438,104 @@ document.getElementById('varMatch').addEventListener('change',renderFinetune);
 /* ---------- INIT ---------- */
 fetchData(); startPolling();
 </script>
+<script>
+/* ---------- SEEDING TAB (Monte-Carlo op MATCHES/RATING) ---------- */
+(function(){
+  const SEEDN=20260717; let SEED_TARGET=2; let sdBase=null; const sdGDcache={};
+  const SIB={1:[4,5],8:[4,5],4:[1,8],5:[1,8],2:[3,6],7:[3,6],3:[2,7],6:[2,7]};
+  const OTHER={top:[2,3],bot:[1,4]};
+  function rngF(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  function pw(dl){return 1/(1+Math.pow(10,-dl/15));}
+  function sdMatch(rng,rh,ra){const dl=rh-ra,dp=Math.abs(dl)<6?0.20:0.10;if(rng()<dp){const g=1+Math.floor(rng()*3);return[g,g];}let m=Math.round(Math.abs(dl)/8+(-1.5+rng()*3));if(m<1)m=1;const lo=Math.floor(rng()*3),wi=lo+m;return rng()<pw(dl)?[wi,lo]:[lo,wi];}
+  function codesList(){return TEAMS.map(t=>t.code);}
+  function sdSim(nSims,fixed,seed){
+    const codes=codesList(),idx={};codes.forEach((c,i)=>idx[c]=i);
+    const posCount=new Array(24).fill(0),teamAt=codes.map(()=>new Array(9).fill(0));
+    let ned1=0,ausSlip=0,ned1Slip=0;const rng=rngF(seed>>>0);
+    for(let s=0;s<nSims;s++){
+      const pts=new Array(codes.length).fill(0),gf=new Array(codes.length).fill(0),ga=new Array(codes.length).fill(0);let slip=false;
+      for(const m of MATCHES){
+        let hs=m.hs,as=m.as;
+        if(hs==null){const key=m.h+'|'+m.a;
+          if(fixed&&fixed[key]){hs=fixed[key][0];as=fixed[key][1];}
+          else{const r=sdMatch(rng,RATING[m.h],RATING[m.a]);hs=r[0];as=r[1];}}
+        const ih=idx[m.h],ia=idx[m.a];
+        gf[ih]+=hs;ga[ih]+=as;gf[ia]+=as;ga[ia]+=hs;
+        if(hs>as)pts[ih]+=3;else if(hs<as)pts[ia]+=3;else{pts[ih]++;pts[ia]++;}
+        if(m.h==='AUS'||m.a==='AUS'){if(hs===as)slip=true;else{const w=hs>as?m.h:m.a;if(w!=='AUS')slip=true;}}
+      }
+      const order=codes.map((c,i)=>i).sort((x,y)=>pts[y]-pts[x]||(gf[y]-ga[y])-(gf[x]-ga[x])||gf[y]-gf[x]||rng()-0.5);
+      const pos=order.indexOf(idx['NED'])+1;posCount[pos]++;
+      for(let k=0;k<8;k++)teamAt[order[k]][k+1]++;
+      if(pos===1)ned1++;if(slip){ausSlip++;if(pos===1)ned1Slip++;}
+    }
+    return{posCount,teamAt,idx,codes,ned1,ausSlip,ned1Slip,n:nSims};
+  }
+  function nedRem(){return MATCHES.filter(m=>(m.h==='NED'||m.a==='NED')&&m.hs==null);}
+  function marginFixed(mtot){const rem=nedRem(),k=rem.length,base=new Array(k).fill(1);let ex=mtot-k,i=0;while(ex>0){base[i%k]++;ex--;i++;}
+    const fx={};rem.forEach((m,idx)=>{fx[m.h+'|'+m.a]=(m.h==='NED')?[base[idx],0]:[0,base[idx]];});return fx;}
+  function sig(){return MATCHES.map(m=>m.hs+'/'+m.as).join(',')+'|'+TEAMS.map(t=>t.rating).join(',');}
+  function rt(c){return RATING[c]||0;}
+  function sclass(c){const r=rt(c);return r>=82?'var(--k)':(r>=78?'var(--h)':'var(--f)');}
+  function sword(c){const r=rt(c);return r>=82?'topploeg':(r>=78?'sterk':'haalbaar');}
+  function strong(c){return rt(c)>=78;}
+  function modalTeam(res,seed,used){let best=null;for(const c of res.codes){if(c==='NED'||used.has(c))continue;const v=res.teamAt[res.idx[c]][seed];if(best===null||v>best.v)best={c,v};}return best?best.c:'—';}
+  function bar(seedNo,p,hl){const w=Math.max(1,Math.round(p*100));return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span class="mono" style="width:26px;color:var(--faint);font-size:12px;text-align:right">${seedNo}e</span><div style="flex:1;background:var(--panel2);border-radius:5px;height:22px;position:relative;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:${Math.min(100,w)}%;background:${hl?'var(--ned)':'var(--line2)'};border-radius:5px"></div><span class="mono" style="position:absolute;left:7px;line-height:22px;font-size:11.5px;color:var(--ink)">${Math.round(p*100)}%</span></div></div>`;}
+  function targetsUI(){const opts=[[1,'Poulewinst (1e)'],[2,'Top 2'],[4,'Top 4']];
+    document.getElementById('sdTargets').innerHTML=opts.map(o=>`<button data-t="${o[0]}" class="sdtb" style="font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:6px;padding:5px 10px;border-radius:6px;cursor:pointer;border:1px solid ${o[0]===SEED_TARGET?'var(--ned)':'var(--line2)'};background:${o[0]===SEED_TARGET?'rgba(245,129,30,.15)':'transparent'};color:${o[0]===SEED_TARGET?'var(--ned)':'var(--muted)'}">${o[1]}</button>`).join('');
+    document.querySelectorAll('.sdtb').forEach(b=>b.onclick=()=>{SEED_TARGET=+b.dataset.t;targetsUI();drawAll();});}
+  function drawAll(){
+    const res=sdBase.res,n=res.n;const cum=t=>{let c=0;for(let k=1;k<=t;k++)c+=res.posCount[k];return c/n;};
+    let modalSeed=1,bestc=-1;for(let k=1;k<=8;k++)if(res.posCount[k]>bestc){bestc=res.posCount[k];modalSeed=k;}
+    // bars
+    let bars='';for(let k=1;k<=8;k++)bars+=bar(k,res.posCount[k]/n,k===modalSeed);
+    document.getElementById('sdBars').innerHTML=bars;
+    // kans + GD
+    const kans=document.getElementById('sdKans');
+    if(SEED_TARGET===1){
+      kans.innerHTML=`<div style="font-size:30px;font-weight:700;color:var(--ned);line-height:1">${Math.round(res.ned1/n*100)}%</div><div style="color:var(--muted);margin:4px 0 10px">kans op 1e met huidige vorm</div>
+      <div>AUS morst punten in <b>${Math.round(res.ausSlip/n*100)}%</b> van de sims — dán is NED 1e in <b>${Math.round(res.ned1Slip/Math.max(1,res.ausSlip)*100)}%</b>.</div>
+      <div style="margin-top:8px;color:var(--muted)">1e ligt <b>niet in eigen hand</b>: pas kansrijk als AUS struikelt. Speel voor top-2 en pomp je doelsaldo op als AUS punten verliest.</div>`;
+    } else {
+      const nm=SEED_TARGET===2?'top-2':'top-4';
+      kans.innerHTML=`<div style="font-size:30px;font-weight:700;color:var(--ned);line-height:1">${Math.round(cum(SEED_TARGET)*100)}%</div><div style="color:var(--muted);margin:4px 0 10px">kans op ${nm} met huidige vorm</div><div id="sdGD" style="color:var(--muted)">doelsaldo berekenen…</div>`;
+      const rem=nedRem();
+      if(rem.length===0){document.getElementById('sdGD').innerHTML='NED heeft geen poulewedstrijden meer — doelsaldo staat vast.';}
+      else{const key=sdBase.sig+'|'+SEED_TARGET;
+        const show=(gd)=>{const ex=m=>{const b=new Array(rem.length).fill(1);let e=m-rem.length,i=0;while(e>0){b[i%rem.length]++;e--;i++;}return b.map(x=>x+'–0').join(', ');};
+          if(SEED_TARGET===4){document.getElementById('sdGD').innerHTML=`<b style="color:var(--f)">Top-4 is zeker zodra NED alle ${rem.length} resterende duels wint</b> — doelsaldo maakt niet uit. Speel door voor top-2.`;return;}
+          document.getElementById('sdGD').innerHTML=`Bij winst van alle ${rem.length} duels:<br>~50% top-2 bij totaal <b style="color:var(--ned)">+${gd.m50??'>'+gd.max}</b> ${gd.m50?'('+ex(gd.m50)+')':''}<br>~90% bij <b style="color:var(--ned)">${gd.m90?'+'+gd.m90:'meer dan +'+gd.max+' — met 3 zeges alleen niet haalbaar'}</b>`;};
+        if(sdGDcache[key]){show(sdGDcache[key]);}
+        else{setTimeout(()=>{const rem2=nedRem();let m50=null,m90=null;const k=rem2.length,maxM=3*k+4;
+          for(let mt=k;mt<=maxM;mt++){const r=sdSim(1600,marginFixed(mt),SEEDN+mt*7);let c=0;for(let z=1;z<=2;z++)c+=r.posCount[z];const p=c/r.n;if(m50===null&&p>=0.5)m50=mt;if(m90===null&&p>=0.9)m90=mt;}
+          const gd={m50,m90,max:maxM};sdGDcache[key]=gd;show(gd);},20);}
+      }
+    }
+    // bracket path
+    const used=new Set(['NED']),s=modalSeed;
+    const qfs=QF_PARTNER[s],qf=modalTeam(res,qfs,used);used.add(qf);
+    const sib=SIB[s]||[2,7];let a=modalTeam(res,sib[0],used);let b=modalTeam(res,sib[1],new Set([...used,a]));const semi=rt(a)>=rt(b)?a:b;used.add(semi);
+    const oh=(s===1||s===8||s===4||s===5)?OTHER.top:OTHER.bot;let fa=modalTeam(res,oh[0],used);let fb=modalTeam(res,oh[1],new Set([...used,fa]));const fin=rt(fa)>=rt(fb)?fa:fb;
+    const opp=(stage,sub,c)=>`<div style="flex:1;min-width:150px;border:1px solid var(--line);border-radius:8px;padding:10px 12px"><div class="mono" style="font-size:10.5px;letter-spacing:.06em;color:var(--faint);text-transform:uppercase">${stage}</div><div style="font-size:17px;font-weight:600;margin-top:2px">${NAME[c]||c}</div><div style="font-size:12px;color:var(--muted)">${sub} · rating ${rt(c)}</div><span style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:${sclass(c)}22;color:${sclass(c)}">${sword(c)}</span></div>`;
+    document.getElementById('sdPath').innerHTML=`<div style="display:flex;gap:10px;flex-wrap:wrap">${opp('Kwartfinale',qfs+'e seed',qf)}${opp('Halve finale (verwacht)','uit '+sib[0]+'e/'+sib[1]+'e',semi)}${opp('Finale (verwacht)','andere helft',fin)}</div>`;
+    const sq=strong(qf),ss=strong(semi);let v;
+    if(!sq&&!ss)v=`<b style="color:var(--f)">Gunstig pad:</b> geen topploeg vóór de finale — ${NAME[qf]||qf} (kwart) en ${NAME[semi]||semi} (halve) zijn haalbaar. De sterke ploeg (${NAME[fin]||fin}) pas in de finale.`;
+    else if(!sq&&ss)v=`<b style="color:var(--h)">Redelijk pad:</b> haalbare kwartfinale (${NAME[qf]||qf}), maar in de halve wacht al een sterke ploeg (${NAME[semi]||semi}).`;
+    else if(sq&&!ss)v=`<b style="color:var(--h)">Lastige start:</b> meteen een sterke ploeg in de kwart (${NAME[qf]||qf}); daarna is de halve (${NAME[semi]||semi}) lichter.`;
+    else v=`<b style="color:var(--k)">Zwaar pad:</b> kwart (${NAME[qf]||qf}) én halve (${NAME[semi]||semi}) tegen sterke ploegen — eindig hoger om dit te verzachten.`;
+    document.getElementById('sdVerdict').innerHTML=`Meest waarschijnlijke eindplek: <b>${modalSeed}e</b>. ${v}`;
+  }
+  window.renderSeeding=function(){
+    targetsUI();
+    const cur=sig();
+    if(sdBase&&sdBase.sig===cur){drawAll();return;}
+    document.getElementById('sdKans').textContent='rekenen…';
+    setTimeout(()=>{sdBase={sig:cur,res:sdSim(9000,null,SEEDN)};drawAll();},20);
+  };
+  const stab=document.querySelector('.tab[data-v="seeding"]');
+  if(stab)stab.addEventListener('click',()=>window.renderSeeding());
+})();
+</script>
+
 </body>
 </html>

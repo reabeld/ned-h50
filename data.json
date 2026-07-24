@@ -1,7 +1,7 @@
 {
-  "updated": "2026-07-24T17:06:43+02:00",
+  "updated": "2026-07-24T18:07:00+02:00",
   "phase": "pool",
-  "note": "Poulefase bezig — 13/44 wedstrijden gespeeld.",
+  "note": "Poulefase bezig — 14/44 wedstrijden gespeeld.",
   "ratings": {
     "AUS": 90,
     "NED": 89,
@@ -122,8 +122,8 @@
     {
       "h": "BEL",
       "a": "HKG",
-      "hs": null,
-      "as": null
+      "hs": 4,
+      "as": 3
     },
     {
       "h": "SGP",

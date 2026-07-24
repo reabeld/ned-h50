@@ -198,7 +198,8 @@
 
   <div class="view" id="view-seeding">
     <div class="banner">Kansen per poule-eindplek (Monte-Carlo, ~9.000 sims op de huidige of ingevoerde uitslagen), het benodigde doelsaldo voor je doel, en het bijbehorende bracket-pad. <b>Top-2 is het stuurdoel</b> — dat geeft de zwakste kwartfinale (7e/8e seed) en stelt de sterke teams het langst uit.</div>
-    <div class="cs" style="margin-bottom:12px">Doel: <span id="sdTargets"></span></div>
+    <div class="cs" style="margin-bottom:8px">Doel: <span id="sdTargets"></span></div>
+    <div class="cs" style="margin-bottom:12px">Bracket-scenario — NED eindigt als: <span id="sdSeedPick"></span></div>
     <div class="ftgrid">
       <div class="card"><h4>Kans &amp; benodigd doelsaldo</h4><div id="sdKans" style="font-size:13.5px">rekenen…</div></div>
       <div class="card"><h4>Kansverdeling eindplek</h4><div id="sdBars"></div></div>
@@ -441,7 +442,7 @@ fetchData(); startPolling();
 <script>
 /* ---------- SEEDING TAB (Monte-Carlo op MATCHES/RATING) ---------- */
 (function(){
-  const SEEDN=20260717; let SEED_TARGET=2; let sdBase=null; const sdGDcache={};
+  const SEEDN=20260717; let SEED_TARGET=2, SEED_SCENARIO=null; let sdBase=null; const sdGDcache={};
   const SIB={1:[4,5],8:[4,5],4:[1,8],5:[1,8],2:[3,6],7:[3,6],3:[2,7],6:[2,7]};
   const OTHER={top:[2,3],bot:[1,4]};
   function rngF(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
@@ -484,6 +485,12 @@ fetchData(); startPolling();
   function targetsUI(){const opts=[[1,'Poulewinst (1e)'],[2,'Top 2'],[4,'Top 4']];
     document.getElementById('sdTargets').innerHTML=opts.map(o=>`<button data-t="${o[0]}" class="sdtb" style="font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:6px;padding:5px 10px;border-radius:6px;cursor:pointer;border:1px solid ${o[0]===SEED_TARGET?'var(--ned)':'var(--line2)'};background:${o[0]===SEED_TARGET?'rgba(245,129,30,.15)':'transparent'};color:${o[0]===SEED_TARGET?'var(--ned)':'var(--muted)'}">${o[1]}</button>`).join('');
     document.querySelectorAll('.sdtb').forEach(b=>b.onclick=()=>{SEED_TARGET=+b.dataset.t;targetsUI();drawAll();});}
+  function seedPickUI(){
+    const opts=[['auto','Auto']].concat([1,2,3,4,5,6,7,8].map(k=>[k,k+'e']));
+    document.getElementById('sdSeedPick').innerHTML=opts.map(o=>{const on=(SEED_SCENARIO===(o[0]==='auto'?null:o[0]));return `<button data-s="${o[0]}" class="sdsb" style="font-family:'JetBrains Mono',monospace;font-size:12px;margin:0 5px 5px 0;padding:4px 8px;border-radius:6px;cursor:pointer;border:1px solid ${on?'var(--ned)':'var(--line2)'};background:${on?'rgba(245,129,30,.15)':'transparent'};color:${on?'var(--ned)':'var(--muted)'}">${o[1]}</button>`;}).join('');
+    document.querySelectorAll('.sdsb').forEach(b=>b.onclick=()=>{SEED_SCENARIO=(b.dataset.s==='auto')?null:+b.dataset.s;seedPickUI();if(sdBase)drawAll();});
+  }
+  function buildControls(){targetsUI();seedPickUI();}
   function drawAll(){
     const res=sdBase.res,n=res.n;const cum=t=>{let c=0;for(let k=1;k<=t;k++)c+=res.posCount[k];return c/n;};
     let modalSeed=1,bestc=-1;for(let k=1;k<=8;k++)if(res.posCount[k]>bestc){bestc=res.posCount[k];modalSeed=k;}
@@ -512,7 +519,7 @@ fetchData(); startPolling();
       }
     }
     // bracket path
-    const used=new Set(['NED']),s=modalSeed;
+    const dispSeed=SEED_SCENARIO||modalSeed; const used=new Set(['NED']),s=dispSeed;
     const qfs=QF_PARTNER[s],qf=modalTeam(res,qfs,used);used.add(qf);
     const sib=SIB[s]||[2,7];let a=modalTeam(res,sib[0],used);let b=modalTeam(res,sib[1],new Set([...used,a]));const semi=rt(a)>=rt(b)?a:b;used.add(semi);
     const oh=(s===1||s===8||s===4||s===5)?OTHER.top:OTHER.bot;let fa=modalTeam(res,oh[0],used);let fb=modalTeam(res,oh[1],new Set([...used,fa]));const fin=rt(fa)>=rt(fb)?fa:fb;
@@ -523,15 +530,16 @@ fetchData(); startPolling();
     else if(!sq&&ss)v=`<b style="color:var(--h)">Redelijk pad:</b> haalbare kwartfinale (${NAME[qf]||qf}), maar in de halve wacht al een sterke ploeg (${NAME[semi]||semi}).`;
     else if(sq&&!ss)v=`<b style="color:var(--h)">Lastige start:</b> meteen een sterke ploeg in de kwart (${NAME[qf]||qf}); daarna is de halve (${NAME[semi]||semi}) lichter.`;
     else v=`<b style="color:var(--k)">Zwaar pad:</b> kwart (${NAME[qf]||qf}) én halve (${NAME[semi]||semi}) tegen sterke ploegen — eindig hoger om dit te verzachten.`;
-    document.getElementById('sdVerdict').innerHTML=`Meest waarschijnlijke eindplek: <b>${modalSeed}e</b>. ${v}`;
+    document.getElementById('sdVerdict').innerHTML=(SEED_SCENARIO?`Scenario — NED als <b>${dispSeed}e</b>. `:`Meest waarschijnlijke eindplek: <b>${modalSeed}e</b>. `)+v;
   }
   window.renderSeeding=function(){
-    targetsUI();
+    buildControls();
     const cur=sig();
     if(sdBase&&sdBase.sig===cur){drawAll();return;}
     document.getElementById('sdKans').textContent='rekenen…';
     setTimeout(()=>{sdBase={sig:cur,res:sdSim(9000,null,SEEDN)};drawAll();},20);
   };
+  buildControls();
   const stab=document.querySelector('.tab[data-v="seeding"]');
   if(stab)stab.addEventListener('click',()=>window.renderSeeding());
 })();

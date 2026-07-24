@@ -299,5 +299,95 @@
       "hs": null,
       "as": null
     }
+  ],
+  "knockout": [
+    {
+      "slot": "qf1",
+      "match": "199",
+      "date": "29 Jul",
+      "time": "09:00",
+      "venue": "HCR 1",
+      "h": null,
+      "a": null,
+      "hs": null,
+      "as": null
+    },
+    {
+      "slot": "qf2",
+      "match": "205",
+      "date": "29 Jul",
+      "time": "11:00",
+      "venue": "HCR 1",
+      "h": null,
+      "a": null,
+      "hs": null,
+      "as": null
+    },
+    {
+      "slot": "qf3",
+      "match": "211",
+      "date": "29 Jul",
+      "time": "13:00",
+      "venue": "HCR 1",
+      "h": null,
+      "a": null,
+      "hs": null,
+      "as": null
+    },
+    {
+      "slot": "qf4",
+      "match": "217",
+      "date": "29 Jul",
+      "time": "15:00",
+      "venue": "HCR 1",
+      "h": null,
+      "a": null,
+      "hs": null,
+      "as": null
+    },
+    {
+      "slot": "semi1",
+      "match": "265",
+      "date": "31 Jul",
+      "time": "13:00",
+      "venue": "HVV 1",
+      "h": null,
+      "a": null,
+      "hs": null,
+      "as": null
+    },
+    {
+      "slot": "semi2",
+      "match": "271",
+      "date": "31 Jul",
+      "time": "15:00",
+      "venue": "HVV 1",
+      "h": null,
+      "a": null,
+      "hs": null,
+      "as": null
+    },
+    {
+      "slot": "final",
+      "match": "299",
+      "date": "1 Aug",
+      "time": "12:00",
+      "venue": "HCR 1",
+      "h": null,
+      "a": null,
+      "hs": null,
+      "as": null
+    },
+    {
+      "slot": "third",
+      "match": "300",
+      "date": "1 Aug",
+      "time": "12:00",
+      "venue": "HCR 2",
+      "h": null,
+      "a": null,
+      "hs": null,
+      "as": null
+    }
   ]
 }

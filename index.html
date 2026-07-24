@@ -211,7 +211,7 @@
 
   <div class="view" id="view-knockout">
     <div class="banner">Knock-out (top 8). Kwartfinales wo 29 jul · halve finales vr 31 jul · finale za 1 aug. Velden: <b>HCR</b> = HC Rotterdam (Hazelaarweg) · <b>HVV</b> = HC Victoria (Kralingseweg). Teams vullen zich vanuit de eindstand van de poule; uitslagen verschijnen zodra ze bekend zijn. Kansen zijn doorgerekend (poule + knock-out).</div>
-    <div class="card" style="margin-bottom:14px"><h4>Kansen NED — hoe ver?</h4><div id="koProb" style="display:flex;gap:14px;flex-wrap:wrap">rekenen…</div><div id="koProbNote" style="margin-top:8px;font-size:13px;color:var(--muted)"></div></div>
+    <div class="card" style="margin-bottom:14px"><h4>Kansen NED — hoe ver?</h4><div class="cs" style="margin:2px 0 12px">Scenario — NED eindigt als: <span id="koScen"></span></div><div id="koProb" style="display:flex;gap:14px;flex-wrap:wrap">rekenen…</div><div id="koProbNote" style="margin-top:8px;font-size:13px;color:var(--muted)"></div></div>
     <div id="koRounds"></div>
   </div>
 
@@ -557,7 +557,7 @@ fetchData(); startPolling();
 <script>
 /* ---------- KNOCK-OUT TAB ---------- */
 (function(){
-  const KON=6000, SEEDK=20260717;
+  const KON=6000, SEEDK=20260717; let SEED_SCEN=null;
   const KO_FIX=[
     {slot:'qf1',round:'Kwartfinale',label:'4e v 5e',date:'wo 29 jul',time:'09:00',venue:'HCR 1',sh:4,sa:5},
     {slot:'qf2',round:'Kwartfinale',label:'3e v 6e',date:'wo 29 jul',time:'11:00',venue:'HCR 1',sh:3,sa:6},
@@ -573,7 +573,7 @@ fetchData(); startPolling();
   function rt(c){return RATING[c]||0;}
   function sdMatch(rng,rh,ra){const dl=rh-ra,dp=Math.abs(dl)<6?0.20:0.10;if(rng()<dp){const g=1+Math.floor(rng()*3);return[g,g];}let m=Math.round(Math.abs(dl)/8+(-1.5+rng()*3));if(m<1)m=1;const lo=Math.floor(rng()*3),wi=lo+m;return rng()<pw(dl)?[wi,lo]:[lo,wi];}
   function koKnown(){const kk={};(KO_RESULTS||[]).forEach(r=>{if(r&&r.slot)kk[r.slot]=r;});return kk;}
-  function koSim(nSims,seed){
+  function koSim(nSims,seed,scen){
     const codes=TEAMS.map(t=>t.code),idx={};codes.forEach((c,i)=>idx[c]=i);
     const rng=rngF(seed>>>0);const known=koKnown();
     let cQF=0,cSF=0,cF=0,cT=0,cP=0;
@@ -583,7 +583,7 @@ fetchData(); startPolling();
         const ih=idx[m.h],ia=idx[m.a];gf[ih]+=hs;ga[ih]+=as;gf[ia]+=as;ga[ia]+=hs;
         if(hs>as)pts[ih]+=3;else if(hs<as)pts[ia]+=3;else{pts[ih]++;pts[ia]++;}}
       const order=codes.map((c,i)=>i).sort((x,y)=>pts[y]-pts[x]||(gf[y]-ga[y])-(gf[x]-ga[x])||gf[y]-gf[x]||rng()-0.5);
-      const nedPos=order.indexOf(idx.NED)+1; if(nedPos>8)continue; cQF++;
+      const nedPos=order.indexOf(idx.NED)+1; if(scen!=null){if(nedPos!==scen)continue;}else if(nedPos>8)continue; cQF++;
       const st={};for(let k=1;k<=8;k++)st[k]=codes[order[k-1]];
       const play=(slot,h,a)=>{const kk=known[slot];if(kk&&kk.hs!=null&&kk.h===h&&kk.a===a)return kk.hs>kk.as?h:a;if(kk&&kk.hs!=null&&kk.h===a&&kk.a===h)return kk.hs>kk.as?a:h;return rng()<pw(rt(h)-rt(a))?h:a;};
       const wq1=play('qf1',st[4],st[5]),wq2=play('qf2',st[3],st[6]),wq3=play('qf3',st[2],st[7]),wq4=play('qf4',st[1],st[8]);
@@ -613,16 +613,28 @@ fetchData(); startPolling();
     if(!c){const fb=fx.sh?(side==='h'?fx.sh+'e':fx.sa+'e'):(fx.fromW?'Winnaar '+fx.fromW[side==='h'?0:1].toUpperCase():'Verliezer '+fx.fromL[side==='h'?0:1].toUpperCase());return `<span style="color:var(--faint)">${fb}</span>`;}
     const isN=c==='NED';return `<span class="tcol ${c}" style="${isN?'font-weight:700':''}">${nm(c)}</span>`;
   }
+  function scenPickUI(){
+    const opts=[['auto','Auto']].concat([1,2,3,4,5,6,7,8].map(k=>[k,k+'e']));
+    const el=document.getElementById('koScen'); if(!el)return;
+    el.innerHTML=opts.map(o=>{const on=(SEED_SCEN===(o[0]==='auto'?null:o[0]));return `<button data-s="${o[0]}" class="kosb" style="font-family:'JetBrains Mono',monospace;font-size:12px;margin:0 5px 5px 0;padding:4px 8px;border-radius:6px;cursor:pointer;border:1px solid ${on?'var(--ned)':'var(--line2)'};background:${on?'rgba(245,129,30,.15)':'transparent'};color:${on?'var(--ned)':'var(--muted)'}">${o[1]}</button>`;}).join('');
+    el.querySelectorAll('.kosb').forEach(b=>b.onclick=()=>{SEED_SCEN=(b.dataset.s==='auto')?null:+b.dataset.s;window.renderKnockout();});
+  }
   window.renderKnockout=function(){
     const seeds=curSeeds(),known=koKnown();
     // probabilities
+    scenPickUI();
     const kans=document.getElementById('koProb');kans.textContent='rekenen…';
+    const N=SEED_SCEN?20000:KON;
     setTimeout(()=>{
-      const r=koSim(KON,SEEDK);const n=r.n;const P=x=>Math.round(x/n*100)+'%';
+      const r=koSim(N,SEEDK,SEED_SCEN);const base=r.QF;
+      const P=v=> SEED_SCEN? (base? Math.round(v/base*100)+'%':'—') : Math.round(v/r.n*100)+'%';
+      const pqf= SEED_SCEN? (base?'100%':'—') : Math.round(r.QF/r.n*100)+'%';
       const card=(lbl,v,col)=>`<div style="flex:1;min-width:110px;text-align:center"><div style="font-size:26px;font-weight:700;color:${col}">${v}</div><div style="font-size:12px;color:var(--muted)">${lbl}</div></div>`;
-      kans.innerHTML=card('Kwartfinale',P(r.QF),'var(--good)')+card('Halve finale',P(r.SF),'var(--h)')+card('Finale',P(r.F),'var(--ned)')+card('Titel',P(r.T),'var(--ned)')+card('Podium (top 3)',P(r.P),'var(--f)');
+      kans.innerHTML=card('Kwartfinale',pqf,'var(--good)')+card('Halve finale',P(r.SF),'var(--h)')+card('Finale',P(r.F),'var(--ned)')+card('Titel',P(r.T),'var(--ned)')+card('Podium (top 3)',P(r.P),'var(--f)');
       const {pos}=computeStandings();
-      document.getElementById('koProbNote').innerHTML=`Doorgerekend vanaf de huidige stand (NED ${pos['NED']}e), poule- én knock-outonzekerheid meegenomen. Bekende KO-uitslagen worden vastgezet.`;
+      document.getElementById('koProbNote').innerHTML= SEED_SCEN
+        ? `Voorwaardelijk: <b>als</b> NED als ${SEED_SCEN}e eindigt (steekproef ${base} sims). Alleen de knock-out is doorgerekend vanaf die seed.`
+        : `Doorgerekend vanaf de huidige stand (NED ${pos['NED']}e), poule- én knock-outonzekerheid meegenomen. Bekende KO-uitslagen worden vastgezet.`;
     },20);
     // fixtures
     const rounds=[['Kwartfinale','wo 29 jul'],['Halve finale','vr 31 jul'],['Finale / troostfinale','za 1 aug']];

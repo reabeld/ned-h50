@@ -1,7 +1,7 @@
 {
-  "updated": "2026-07-24T19:06:39+02:00",
+  "updated": "2026-07-25T14:13:31+02:00",
   "phase": "pool",
-  "note": "Poulefase bezig — 15/44 wedstrijden gespeeld.",
+  "note": "Poulefase bezig — 18/44 wedstrijden gespeeld.",
   "ratings": {
     "AUS": 90,
     "NED": 89,
@@ -31,8 +31,8 @@
     "p10": 1,
     "p90": 5,
     "pTop8": 1.0,
-    "pTop4": 0.89,
-    "pTop2": 0.51
+    "pTop4": 0.84,
+    "pTop2": 0.5
   },
   "scores": [
     {
@@ -128,20 +128,20 @@
     {
       "h": "SGP",
       "a": "GER",
-      "hs": null,
-      "as": null
+      "hs": 1,
+      "as": 6
     },
     {
       "h": "SRI",
       "a": "SCO",
-      "hs": null,
-      "as": null
+      "hs": 0,
+      "as": 9
     },
     {
       "h": "ESP",
       "a": "ARG",
-      "hs": null,
-      "as": null
+      "hs": 1,
+      "as": 3
     },
     {
       "h": "BAN",

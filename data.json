@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-26T13:07:57+02:00",
+  "updated": "2026-07-26T14:07:18+02:00",
   "phase": "pool",
   "note": "Poulefase bezig — 27/44 (incl. live), NED virtueel.",
   "ratings": {
@@ -194,8 +194,8 @@
     {
       "h": "RSA",
       "a": "SCO",
-      "hs": 0,
-      "as": 0
+      "hs": 2,
+      "as": 1
     },
     {
       "h": "SRI",
@@ -394,9 +394,9 @@
     {
       "h": "RSA",
       "a": "SCO",
-      "hs": 0,
-      "as": 0,
-      "status": "1st Quarter 9'"
+      "hs": 2,
+      "as": 1,
+      "status": "4th Quarter 49'"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
-  "updated": "2026-07-27T10:06:49+02:00",
+  "updated": "2026-07-27T11:07:56+02:00",
   "phase": "pool",
-  "note": "Poulefase bezig - 31/44 (incl. live), NED virtueel.",
+  "note": "Poulefase bezig — 33/44 (incl. live), NED virtueel.",
   "ratings": {
     "AUS": 90,
     "NED": 89,
@@ -31,7 +31,7 @@
     "p10": 2,
     "p90": 3,
     "pTop8": 1.0,
-    "pTop4": 1.0,
+    "pTop4": 0.99,
     "pTop2": 0.17,
     "gdExp": 13.0,
     "gdMed": 13,
@@ -216,14 +216,14 @@
     {
       "h": "NZL",
       "a": "USA",
-      "hs": 3,
+      "hs": 4,
       "as": 1
     },
     {
       "h": "BEL",
       "a": "ARG",
-      "hs": null,
-      "as": null
+      "hs": 1,
+      "as": 0
     },
     {
       "h": "IRL",
@@ -246,14 +246,14 @@
     {
       "h": "ESP",
       "a": "KEN",
-      "hs": 3,
-      "as": 1
+      "hs": 4,
+      "as": 2
     },
     {
       "h": "SCO",
       "a": "CHI",
-      "hs": null,
-      "as": null
+      "hs": 0,
+      "as": 0
     },
     {
       "h": "SGP",
@@ -396,18 +396,18 @@
   ],
   "live": [
     {
-      "h": "NZL",
-      "a": "USA",
-      "hs": 3,
-      "as": 1,
-      "status": "4th Quarter 46'"
+      "h": "BEL",
+      "a": "ARG",
+      "hs": 1,
+      "as": 0,
+      "status": "1st Quarter 13'"
     },
     {
-      "h": "ESP",
-      "a": "KEN",
-      "hs": 3,
-      "as": 1,
-      "status": "3rd Quarter 40'"
+      "h": "SCO",
+      "a": "CHI",
+      "hs": 0,
+      "as": 0,
+      "status": "1st Quarter (net begonnen)"
     }
   ]
 }

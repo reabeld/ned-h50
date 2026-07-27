@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-27T13:07:59+02:00",
+  "updated": "2026-07-27T14:08:03+02:00",
   "phase": "pool",
   "note": "Poulefase bezig — 35/44 (incl. live), NED virtueel.",
   "ratings": {
@@ -228,8 +228,8 @@
     {
       "h": "IRL",
       "a": "RSA",
-      "hs": 0,
-      "as": 1
+      "hs": 1,
+      "as": 4
     },
     {
       "h": "ENG",
@@ -258,7 +258,7 @@
     {
       "h": "SGP",
       "a": "BAN",
-      "hs": 1,
+      "hs": 2,
       "as": 0
     },
     {
@@ -396,18 +396,11 @@
   ],
   "live": [
     {
-      "h": "IRL",
-      "a": "RSA",
-      "hs": 0,
-      "as": 1,
-      "status": "2nd Quarter 19'"
-    },
-    {
       "h": "SGP",
       "a": "BAN",
-      "hs": 1,
+      "hs": 2,
       "as": 0,
-      "status": "1st Quarter 8'"
+      "status": "4th Quarter 48'"
     }
   ]
 }

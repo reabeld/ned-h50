@@ -212,6 +212,7 @@
   <div class="view" id="view-knockout">
     <div class="banner">Knock-out (top 8). Kwartfinales wo 29 jul · halve finales vr 31 jul · finale za 1 aug. Velden: <b>HCR</b> = HC Rotterdam (Hazelaarweg) · <b>HVV</b> = HC Victoria (Kralingseweg). Teams vullen zich vanuit de eindstand van de poule; uitslagen verschijnen zodra ze bekend zijn. Kansen zijn doorgerekend (poule + knock-out).</div>
     <div class="card" style="margin-bottom:14px"><h4>Kansen NED — hoe ver?</h4><div class="cs" style="margin:2px 0 12px">Scenario — NED eindigt als: <span id="koScen"></span></div><div id="koProb" style="display:flex;gap:14px;flex-wrap:wrap">rekenen…</div><div id="koProbNote" style="margin-top:8px;font-size:13px;color:var(--muted)"></div></div>
+    <div class="card" style="margin-bottom:14px"><h4>Kwartfinale — welke kwart &amp; welke tegenstander</h4><div class="cs" style="margin:2px 0 10px;font-size:13px;color:var(--muted)">Doorgerekend vanuit de huidige poulestand (poule-onzekerheid meegenomen). Kies hierboven een scenario om de kwart vast te zetten; dan varieert alleen de tegenstander.</div><div id="koQF">rekenen…</div></div>
     <div id="koRounds"></div>
   </div>
 
@@ -619,12 +620,49 @@ fetchData(); startPolling();
     el.innerHTML=opts.map(o=>{const on=(SEED_SCEN===(o[0]==='auto'?null:o[0]));return `<button data-s="${o[0]}" class="kosb" style="font-family:'JetBrains Mono',monospace;font-size:12px;margin:0 5px 5px 0;padding:4px 8px;border-radius:6px;cursor:pointer;border:1px solid ${on?'var(--ned)':'var(--line2)'};background:${on?'rgba(245,129,30,.15)':'transparent'};color:${on?'var(--ned)':'var(--muted)'}">${o[1]}</button>`;}).join('');
     el.querySelectorAll('.kosb').forEach(b=>b.onclick=()=>{SEED_SCEN=(b.dataset.s==='auto')?null:+b.dataset.s;window.renderKnockout();});
   }
+  const QFMAP={1:['qf4',8],2:['qf3',7],3:['qf2',6],4:['qf1',5],5:['qf1',4],6:['qf2',3],7:['qf3',2],8:['qf4',1]};
+  const QFMETA={qf1:['Kwart 1 — 4e v 5e','09:00'],qf2:['Kwart 2 — 3e v 6e','11:00'],qf3:['Kwart 3 — 2e v 7e','13:00'],qf4:['Kwart 4 — 1e v 8e','15:00']};
+  const QFSHORT={qf1:'Kwart 1',qf2:'Kwart 2',qf3:'Kwart 3',qf4:'Kwart 4'};
+  function qfOutlook(nSims,scen){
+    const codes=TEAMS.map(t=>t.code),idx={};codes.forEach((c,i)=>idx[c]=i);
+    const rng=rngF(SEEDK>>>0);
+    const slotC={qf1:0,qf2:0,qf3:0,qf4:0},oppC={},pairC={};let tot=0;
+    for(let s=0;s<nSims;s++){
+      const pts=new Array(codes.length).fill(0),gf=new Array(codes.length).fill(0),ga=new Array(codes.length).fill(0);
+      for(const m of MATCHES){let hs=m.hs,as=m.as;if(hs==null){const r=sdMatch(rng,RATING[m.h],RATING[m.a]);hs=r[0];as=r[1];}
+        const ih=idx[m.h],ia=idx[m.a];gf[ih]+=hs;ga[ih]+=as;gf[ia]+=as;ga[ia]+=hs;
+        if(hs>as)pts[ih]+=3;else if(hs<as)pts[ia]+=3;else{pts[ih]++;pts[ia]++;}}
+      const order=codes.map((c,i)=>i).sort((x,y)=>pts[y]-pts[x]||(gf[y]-ga[y])-(gf[x]-ga[x])||gf[y]-gf[x]||rng()-0.5);
+      const nedPos=order.indexOf(idx.NED)+1;
+      if(scen!=null){if(nedPos!==scen)continue;}else if(nedPos>8)continue;
+      tot++;const mp=QFMAP[nedPos],slot=mp[0],opp=codes[order[mp[1]-1]];
+      slotC[slot]++;oppC[opp]=(oppC[opp]||0)+1;const key=slot+'|'+opp;pairC[key]=(pairC[key]||0)+1;
+    }
+    return {tot,slotC,oppC,pairC};
+  }
+  function qfColor(c){return c==='NED'?'#F5811E':(c==='AUS'?'#16A67B':(c==='ENG'?'#E0504E':'#6b7684'));}
+  function qfBar(label,pct,color){return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><div style="width:210px;font-size:12.5px;line-height:1.25">${label}</div><div style="flex:1;min-width:50px;background:var(--line);border-radius:4px;height:13px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color}"></div></div><div style="width:38px;text-align:right;font-family:monospace;font-size:12px;color:var(--muted)">${pct}%</div></div>`;}
+  function renderQFOutlook(N){
+    const box=document.getElementById('koQF');if(!box)return;
+    const o=qfOutlook(N,SEED_SCEN),T=o.tot||1;
+    if(!o.tot){box.innerHTML='<div style="color:var(--muted);font-size:13px">In dit scenario haalt NED de kwartfinale niet.</div>';return;}
+    const slots=Object.keys(o.slotC).filter(k=>o.slotC[k]>0).sort((a,b)=>o.slotC[b]-o.slotC[a]);
+    const opps=Object.entries(o.oppC).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const pairs=Object.entries(o.pairC).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const h1=slots.map(k=>qfBar(`${QFMETA[k][0]} · wo 29 jul ${QFMETA[k][1]} · HCR 1`,Math.round(100*o.slotC[k]/T),'var(--ned)')).join('');
+    const h2=opps.map(e=>qfBar(nm(e[0]),Math.round(100*e[1]/T),qfColor(e[0]))).join('');
+    const h3=pairs.map(e=>{const p=e[0].split('|'),slot=p[0],opp=p[1];return qfBar(`${QFSHORT[slot]} · vs ${nm(opp)}`,Math.round(100*e[1]/T),qfColor(opp));}).join('');
+    box.innerHTML=`<div style="font-weight:600;font-size:13px;margin:2px 0 4px;color:var(--ink)">Welke kwart wordt het</div>${h1}`
+      +`<div style="font-weight:600;font-size:13px;margin:13px 0 4px;color:var(--ink)">Mogelijke tegenstanders</div>${h2}`
+      +`<div style="font-weight:600;font-size:13px;margin:13px 0 4px;color:var(--ink)">Meest waarschijnlijke scenario's</div>${h3}`;
+  }
   window.renderKnockout=function(){
     const seeds=curSeeds(),known=koKnown();
     // probabilities
     scenPickUI();
     const kans=document.getElementById('koProb');kans.textContent='rekenen…';
     const N=SEED_SCEN?20000:KON;
+    {const qb=document.getElementById("koQF");if(qb){qb.textContent="rekenen…";setTimeout(()=>renderQFOutlook(N),25);}}
     setTimeout(()=>{
       const r=koSim(N,SEEDK,SEED_SCEN);const base=r.QF;
       const P=v=> SEED_SCEN? (base? Math.round(v/base*100)+'%':'—') : Math.round(v/r.n*100)+'%';

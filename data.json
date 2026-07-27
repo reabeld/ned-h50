@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-27T17:06:43+02:00",
+  "updated": "2026-07-27T18:07:18+02:00",
   "phase": "pool",
   "note": "Poulefase bezig — 39/44 (incl. live), NED virtueel.",
   "ratings": {
@@ -240,7 +240,7 @@
     {
       "h": "FRA",
       "a": "MAS",
-      "hs": 0,
+      "hs": 4,
       "as": 0
     },
     {
@@ -270,7 +270,7 @@
     {
       "h": "HKG",
       "a": "JPN",
-      "hs": 1,
+      "hs": 7,
       "as": 1
     },
     {
@@ -398,16 +398,9 @@
     {
       "h": "FRA",
       "a": "MAS",
-      "hs": 0,
+      "hs": 4,
       "as": 0,
-      "status": "1st Quarter 7'"
-    },
-    {
-      "h": "HKG",
-      "a": "JPN",
-      "hs": 1,
-      "as": 1,
-      "status": "2nd Quarter 24'"
+      "status": "3rd Quarter 45'"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
-  "updated": "2026-07-27T18:07:18+02:00",
+  "updated": "2026-07-27T19:06:41+02:00",
   "phase": "pool",
-  "note": "Poulefase bezig — 39/44 (incl. live), NED virtueel.",
+  "note": "Poulefase bezig -- 39/44 (incl. live), NED virtueel.",
   "ratings": {
     "AUS": 90,
     "NED": 89,
@@ -240,7 +240,7 @@
     {
       "h": "FRA",
       "a": "MAS",
-      "hs": 4,
+      "hs": 6,
       "as": 0
     },
     {
@@ -394,13 +394,5 @@
       "as": null
     }
   ],
-  "live": [
-    {
-      "h": "FRA",
-      "a": "MAS",
-      "hs": 4,
-      "as": 0,
-      "status": "3rd Quarter 45'"
-    }
-  ]
+  "live": []
 }

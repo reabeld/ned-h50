@@ -1,7 +1,7 @@
 {
-  "updated": "2026-07-28T17:38:41+02:00",
-  "phase": "pool",
-  "note": "Poulefase bezig — 41/44 (incl. live), NED virtueel.",
+  "updated": "2026-07-28T20:06:10+02:00",
+  "phase": "knockout",
+  "note": "Poulefase afgerond — knock-outfase.",
   "ratings": {
     "AUS": 90,
     "NED": 89,
@@ -288,20 +288,20 @@
     {
       "h": "USA",
       "a": "GER",
-      "hs": null,
-      "as": null
+      "hs": 0,
+      "as": 5
     },
     {
       "h": "JPN",
       "a": "ESP",
-      "hs": null,
-      "as": null
+      "hs": 0,
+      "as": 5
     },
     {
       "h": "WAL",
       "a": "SGP",
-      "hs": null,
-      "as": null
+      "hs": 7,
+      "as": 1
     }
   ],
   "knockout": [
@@ -394,20 +394,5 @@
       "as": null
     }
   ],
-  "live": [
-    {
-      "h": "AUS",
-      "a": "BEL",
-      "hs": 2,
-      "as": 0,
-      "status": "4th Quarter 56'"
-    },
-    {
-      "h": "CHI",
-      "a": "HKG",
-      "hs": 2,
-      "as": 0,
-      "status": "3rd Quarter 42'"
-    }
-  ]
+  "live": []
 }

@@ -1,7 +1,7 @@
 {
-  "updated": "2026-07-30T12:08:36+02:00",
+  "updated": "2026-07-30T14:11:41+02:00",
   "phase": "knockout",
-  "note": "Poulefase afgerond — knock-outfase.",
+  "note": "Poulefase afgerond - knock-outfase.",
   "ratings": {
     "AUS": 90,
     "NED": 89,
@@ -70,15 +70,21 @@
       "as": 0
     },
     {
+      "h": "MAS",
+      "a": "KEN",
+      "hs": 4,
+      "as": 1
+    },
+    {
       "h": "GER",
       "a": "WAL",
       "hs": 2,
       "as": 2
     },
     {
-      "h": "MAS",
-      "a": "KEN",
-      "hs": 4,
+      "h": "FRA",
+      "a": "ESP",
+      "hs": 1,
       "as": 1
     },
     {
@@ -86,12 +92,6 @@
       "a": "AUS",
       "hs": 1,
       "as": 6
-    },
-    {
-      "h": "FRA",
-      "a": "ESP",
-      "hs": 1,
-      "as": 1
     },
     {
       "h": "IRL",
@@ -118,16 +118,16 @@
       "as": 1
     },
     {
-      "h": "KEN",
-      "a": "FRA",
-      "hs": 2,
-      "as": 7
-    },
-    {
       "h": "BEL",
       "a": "HKG",
       "hs": 4,
       "as": 3
+    },
+    {
+      "h": "KEN",
+      "a": "FRA",
+      "hs": 2,
+      "as": 7
     },
     {
       "h": "SGP",
@@ -160,16 +160,16 @@
       "as": 4
     },
     {
-      "h": "JPN",
-      "a": "BEL",
-      "hs": 0,
-      "as": 11
-    },
-    {
       "h": "AUS",
       "a": "CHI",
       "hs": 4,
       "as": 1
+    },
+    {
+      "h": "JPN",
+      "a": "BEL",
+      "hs": 0,
+      "as": 11
     },
     {
       "h": "GER",
@@ -178,16 +178,16 @@
       "as": 1
     },
     {
-      "h": "BAN",
-      "a": "ENG",
-      "hs": 0,
-      "as": 16
-    },
-    {
       "h": "ARG",
       "a": "FRA",
       "hs": 0,
       "as": 0
+    },
+    {
+      "h": "BAN",
+      "a": "ENG",
+      "hs": 0,
+      "as": 16
     },
     {
       "h": "KEN",
@@ -220,8 +220,20 @@
       "as": 1
     },
     {
+      "h": "ESP",
+      "a": "KEN",
+      "hs": 4,
+      "as": 2
+    },
+    {
       "h": "BEL",
       "a": "ARG",
+      "hs": 2,
+      "as": 1
+    },
+    {
+      "h": "SCO",
+      "a": "CHI",
       "hs": 2,
       "as": 1
     },
@@ -232,40 +244,28 @@
       "as": 4
     },
     {
-      "h": "ENG",
-      "a": "SRI",
-      "hs": 15,
-      "as": 1
-    },
-    {
-      "h": "FRA",
-      "a": "MAS",
-      "hs": 6,
-      "as": 0
-    },
-    {
-      "h": "ESP",
-      "a": "KEN",
-      "hs": 4,
-      "as": 2
-    },
-    {
-      "h": "SCO",
-      "a": "CHI",
-      "hs": 2,
-      "as": 1
-    },
-    {
       "h": "SGP",
       "a": "BAN",
       "hs": 3,
       "as": 0
     },
     {
+      "h": "ENG",
+      "a": "SRI",
+      "hs": 15,
+      "as": 1
+    },
+    {
       "h": "NED",
       "a": "WAL",
       "hs": 3,
       "as": 2
+    },
+    {
+      "h": "FRA",
+      "a": "MAS",
+      "hs": 6,
+      "as": 0
     },
     {
       "h": "HKG",
@@ -286,14 +286,14 @@
       "as": 0
     },
     {
-      "h": "USA",
-      "a": "GER",
+      "h": "JPN",
+      "a": "ESP",
       "hs": 0,
       "as": 5
     },
     {
-      "h": "JPN",
-      "a": "ESP",
+      "h": "USA",
+      "a": "GER",
       "hs": 0,
       "as": 5
     },
@@ -313,8 +313,8 @@
       "venue": "HCR 1",
       "h": "GER",
       "a": "BEL",
-      "hs": 6,
-      "as": 5
+      "hs": 4,
+      "as": 4
     },
     {
       "slot": "qf2",

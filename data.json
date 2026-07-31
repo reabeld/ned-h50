@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-31T13:55:40+02:00",
+  "updated": "2026-07-31T22:40:14+02:00",
   "phase": "knockout",
   "note": "Poulefase afgerond — knock-outfase.",
   "ratings": {
@@ -357,8 +357,8 @@
       "venue": "HVV 1",
       "h": "ENG",
       "a": "GER",
-      "hs": 0,
-      "as": 0
+      "hs": 2,
+      "as": 1
     },
     {
       "slot": "semi2",
@@ -368,8 +368,8 @@
       "venue": "HVV 1",
       "h": "AUS",
       "a": "NED",
-      "hs": null,
-      "as": null
+      "hs": 0,
+      "as": 1
     },
     {
       "slot": "final",
@@ -377,8 +377,8 @@
       "date": "1 Aug",
       "time": "12:00",
       "venue": "HCR 1",
-      "h": null,
-      "a": null,
+      "h": "ENG",
+      "a": "NED",
       "hs": null,
       "as": null
     },
@@ -388,19 +388,11 @@
       "date": "1 Aug",
       "time": "12:00",
       "venue": "HCR 2",
-      "h": null,
-      "a": null,
+      "h": "AUS",
+      "a": "GER",
       "hs": null,
       "as": null
     }
   ],
-  "live": [
-    {
-      "h": "ENG",
-      "a": "GER",
-      "hs": 0,
-      "as": 0,
-      "status": "1st Quarter 9'"
-    }
-  ]
+  "live": []
 }
